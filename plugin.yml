@@ -1,0 +1,7 @@
+main: dev.brassboard.Brassboard
+name: Brassboard
+description: Platform for writing Minecraft-Spigot plugins with less boilerplate.
+authors: [Laevend, YukiEmeralis]
+version: 0.1.0
+api-version: 1.13
+prefix: b
