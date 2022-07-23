@@ -1,6 +1,6 @@
 # BrassBoard
 
-![](https://img.shields.io/github/issues/Laevend/BrassBoard) ![](https://img.shields.io/github/forks/Laevend/BrassBoard) ![](https://img.shields.io/github/stars/Laevend/BrassBoard) ![](https://img.shields.io/github/release/Laevend/BrassBoard) ![](https://img.shields.io/github/license/Laevend/BrassBoard)
+![](https://img.shields.io/github/forks/Laevend/BrassBoard?style=for-the-badge) ![](https://img.shields.io/github/v/release/Laevend/BrassBoard?style=for-the-badge)
 
 ### About
 BrassBoard provides a platform for writing Minecraft-Spigot plugins with less boilerplate.
