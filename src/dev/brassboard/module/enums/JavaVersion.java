@@ -12,7 +12,8 @@ public enum JavaVersion
     JAVA_15(15),
     JAVA_16(16),
     JAVA_17(17),
-    CUSTOM(-1)
+    SERVER(-1),
+    MINIMUM_SUPPORTED_FOR_API_VERSION(-1);
     ;
 
     private final int specification;

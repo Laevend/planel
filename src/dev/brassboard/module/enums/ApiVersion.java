@@ -7,7 +7,7 @@ public enum ApiVersion
     V1_18_R1(JavaVersion.JAVA_17),
     V1_18_R2(JavaVersion.JAVA_17),
     V1_19_R1(JavaVersion.JAVA_17),
-    CUSTOM(JavaVersion.CUSTOM)
+    CUSTOM(JavaVersion.SERVER)
     ;
 
     private final JavaVersion minSupportedVersion;
@@ -27,7 +27,7 @@ public enum ApiVersion
         if (version == null)
             return false;
 
-        if (version.equals(JavaVersion.CUSTOM))
+        if (version.equals(JavaVersion.SERVER))
             return true;
         if (this.equals(ApiVersion.CUSTOM))
             return true;
