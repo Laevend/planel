@@ -1,4 +1,4 @@
-package org.dape;
+package coffee.dape;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

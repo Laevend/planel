@@ -1,4 +1,4 @@
-package org.dape.module.enums;
+package coffee.dape.module.enums;
 
 public enum JavaVersion 
 {
