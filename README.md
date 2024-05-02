@@ -10,4 +10,4 @@ Dape is a software backplane for which various modular software can be docked to
 
 # Contributors
 - [Laeven](https://github.com/Laevend)
-- [Yuki Emeralis](https://github.com/YukiEmeralis/)
+- [Khyonie](https://github.com/Khyonie/)
