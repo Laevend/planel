@@ -25,3 +25,8 @@ hs_err_pid*
 # Java folders
 lib/
 bin/
+
+# Wisteria/Eclipse
+.classpath
+.project
+project.toml
