@@ -1,7 +1,9 @@
-main: dev.brassboard.Brassboard
-name: Brassboard
-description: Platform for writing Minecraft-Spigot plugins with less boilerplate.
-authors: [Laevend, YukiEmeralis]
-version: 0.1.0
-api-version: 1.13
-prefix: bb
+name: Dape
+version: 0.1
+main: net.laeven.dape.Dape
+description: Dape Full
+authors:
+    - Laeven
+    - Khyonie
+api-version: '1.20'
+load: STARTUP

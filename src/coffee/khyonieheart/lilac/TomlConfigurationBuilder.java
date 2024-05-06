@@ -185,7 +185,7 @@ public class TomlConfigurationBuilder
 
 	// Formatting
 	//-------------------------------------------------------------------------------- 
-	public void setInlineComment(
+	public TomlConfigurationBuilder setInlineComment(
 		String comment
 	) {
 		Objects.requireNonNull(comment);
@@ -198,13 +198,13 @@ public class TomlConfigurationBuilder
 		if (this.formattingTarget instanceof Commentable c)
 		{
 			c.setComment(comment);
-			return;
+			return this;
 		}
 
 		throw new IllegalArgumentException("Cannot insert comment on non-commentable type " + this.formattingTarget.getType().name());
 	}
 
-	public void addWhitespace() 
+	public TomlConfigurationBuilder addWhitespace() 
 	{
 		if (this.formattingTarget == null)
 		{
@@ -212,9 +212,10 @@ public class TomlConfigurationBuilder
 		}
 
 		this.formattingTarget.incrementTrailingNewlines();
+		return this;
 	}
 
-	public void addWhitespace(
+	public TomlConfigurationBuilder addWhitespace(
 		int lines
 	) {
 		if (lines < 1)
@@ -226,6 +227,8 @@ public class TomlConfigurationBuilder
 		{
 			addWhitespace();
 		}
+		
+		return this;
 	}
 
 	// Etc. 
