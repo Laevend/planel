@@ -633,7 +633,7 @@ public class PrintUtils
 		
 		for(char c : message.toCharArray())
 		{
-			if(c == 'ง')
+			if(c == 'ยง')
 			{
 				previousCode = true;
 				continue;
@@ -688,7 +688,7 @@ public class PrintUtils
 		
 		for(char c : message.toCharArray())
 		{
-			if(c == 'ง')
+			if(c == 'ยง')
 			{
 				previousCode = true;
 				continue;

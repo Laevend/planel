@@ -52,13 +52,15 @@ public final class Dape extends JavaPlugin
 		
 		Logg.info("&eDape Pre-Bukkit load initialised in " + ((initEndTime - initStartTime) / 1000F) + " seconds");
 		
+		/*
 		Logg.info("This an info message");
 		Logg.warn("This is a warning message");
 		Logg.error("This is an error message");
 		Logg.error("This is an error message with exception",new NullPointerException("Oops"));
 		Logg.fatal("This is a fatal message");
 		Logg.fatal("This is an fatal message with exception",new NullPointerException("Oops"));
-		
+		*/
+
 		Bukkit.getPluginManager().registerEvents(new TestLis(),this);
 	}
 	

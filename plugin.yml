@@ -1,6 +1,6 @@
 name: Dape
 version: 0.1
-main: net.laeven.dape.Dape
+main: coffee.dape.Dape
 description: Dape Full
 authors:
     - Laeven
