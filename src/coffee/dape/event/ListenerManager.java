@@ -12,9 +12,22 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-public class ListenerManager
+import coffee.dape.config.Configurable;
+import coffee.dape.utils.Logg;
+import coffee.khyonieheart.lilac.Lilac;
+import coffee.khyonieheart.lilac.TomlConfiguration;
+import coffee.khyonieheart.lilac.value.TomlObject;
+
+public class ListenerManager implements Configurable
 {
 	private static Map<Class<? extends Event>, List<DapeRegisteredListener>[]> registeredListeners = new HashMap<>();
+
+	private static TomlConfiguration defaultConfiguration = Lilac.newConfiguration()
+		.addComment(" Configuration for Dape event handling")
+		.addTable("event_handling")
+		.addBoolean("event_handling.autohook", true)
+		.setInlineComment(" Set to false to disable Dape event handling and auto-hooking.")
+		.finish();
 
 	public static void callEvent(Event event, EventPriority priority) 
 	{
@@ -108,5 +121,12 @@ public class ListenerManager
 
 			validMethods.add(m);
 		}
+	}
+
+	@Override
+	public Map<String, TomlObject<?>> getDefaults() 
+	{
+		Logg.info("Config: " + Lilac.tomlParser().getEncoder().encode(defaultConfiguration, Lilac.tomlParser().setPreserveComments(true)));
+		return defaultConfiguration.getBacking();
 	}
 }

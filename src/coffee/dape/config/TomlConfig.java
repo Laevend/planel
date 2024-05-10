@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +21,7 @@ import coffee.dape.utils.TimeUtils;
 import coffee.khyonieheart.lilac.Lilac;
 import coffee.khyonieheart.lilac.TomlConfiguration;
 import coffee.khyonieheart.lilac.value.TomlObject;
+import coffee.khyonieheart.lilac.value.TomlObjectType;
 import coffee.khyonieheart.lilac.value.TomlTable;
 import coffee.khyonieheart.lilac.value.formatting.TomlComment;
 
@@ -57,6 +60,10 @@ public class TomlConfig implements DapeConfig
 			load();
 			setDefaults();
 			save();
+
+			// Since firstTimeSetup ALSO calls setDefaults, return so we don't end up with duplicate values 
+			// -Khyo
+			return;
 		}
 		
 		firstTimeSetup();
@@ -162,6 +169,27 @@ public class TomlConfig implements DapeConfig
 	}
 	
 	/**
+	 * Converts a YAML key to a key suitable for TOML.
+	 * 
+	 * <p>"something.this.key" would be converted to:<br>
+	 * [something]<br>
+	 * this.key = <br>
+	 * 
+	 * <p>"something" would be converted to:<br>
+	 * [global]<br>
+	 * something =<br>
+	 * @param key
+	 * @return
+	 */
+	private String[] convertKeyToTomlKey(String key)
+	{
+		int split = key.indexOf('.');			
+		String tableName = split == -1 ? "global" : key.substring(0,split);
+		String keyName = split == -1 ? key : key.substring(split,key.length());
+		return new String[] {tableName,keyName};
+	}
+	
+	/**
 	 * Sets the defaults for the configuration file
 	 * 
 	 * <p>New configuration files have this done automatically
@@ -170,9 +198,9 @@ public class TomlConfig implements DapeConfig
 	{
 		for(String key : this.defaults.keySet())
 		{
-			int split = key.indexOf('.');			
-			String tableName = split == -1 ? "global" : key.substring(0,split);
-			String tableMemberName = split == -1 ? key : key.substring(split,key.length());
+			String keys[] = convertKeyToTomlKey(key);		
+			String tableName = keys[0];
+			String keyName = keys[1];
 			
 			if(!this.config.hasKey(tableName))
 			{
@@ -181,7 +209,7 @@ public class TomlConfig implements DapeConfig
 			
 			TomlTable newTable = new TomlTable(tableName,List.of());
 			newTable.rebase(this.config.getTable(tableName));
-			newTable.get().put(tableMemberName,this.defaults.get(key));
+			newTable.get().put(keyName,this.defaults.get(key));
 			this.config.set(tableName,newTable);
 		}
 	}
@@ -246,5 +274,221 @@ public class TomlConfig implements DapeConfig
 	public void reloadConfig()
 	{
 		this.load();
+	}
+	
+	@Override
+	public boolean hasKey(String key)
+	{
+		String[] keys = convertKeyToTomlKey(key);		
+		return get().hasKey(keys[0]) && get().hasKey(keys[1]);
+	}
+
+	@Override
+	public String getString(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return "NULL"; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (String) get().getTable(keys[0]).get(keys[1]).get();
+	}
+
+	@Override
+	public boolean getBoolean(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return false; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (boolean) get().getTable(keys[0]).get(keys[1]).get();
+	}
+
+	@Override
+	public int getInt(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return -1; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (int) get().getTable(keys[0]).get(keys[1]).get();
+	}
+
+	@Override
+	public long getLong(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return -1L; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (long) get().getTable(keys[0]).get(keys[1]).get();
+	}
+
+	@Override
+	public float getFloat(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return -1F; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (float) get().getTable(keys[0]).get(keys[1]).get();
+	}
+
+	@Override
+	public double getDouble(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return -1D; }
+		String[] keys = convertKeyToTomlKey(key);
+		return (double) get().getTable(keys[0]).get(keys[1]).get();
+	}
+	
+	private List<TomlObject<?>> getTomlArray(String key)
+	{
+		String[] keys = convertKeyToTomlKey(key);
+		TomlObject<?> tomlObjArray = get().getTable(keys[0]).get(keys[1]);
+		
+		if(tomlObjArray.getType() != TomlObjectType.ARRAY)
+		{
+			Logg.error("Could not retrieve string list '" + key + "'. Value is not a TOML array!");
+			return Collections.emptyList();
+		}
+		
+		@SuppressWarnings("unchecked")
+		List<TomlObject<?>> tomlList = (List<TomlObject<?>>) tomlObjArray.get();
+		return tomlList;
+	}
+
+	@Override
+	public List<String> getStringList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<String> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.STRING)
+			{
+				Logg.error("Could not retrieve string list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((String) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Boolean> getBooleanList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<Boolean> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.BOOLEAN)
+			{
+				Logg.error("Could not retrieve boolean list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((Boolean) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Integer> getIntList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<Integer> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.INTEGER)
+			{
+				Logg.error("Could not retrieve int list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((Integer) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Long> getLongList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<Long> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.LONG)
+			{
+				Logg.error("Could not retrieve long list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((Long) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Float> getFloatList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<Float> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.FLOAT)
+			{
+				Logg.error("Could not retrieve float list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((Float) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public List<Double> getDoubleList(String key)
+	{
+		if(!hasKey(key)) { Logg.warn("Could not retrieve '" + key + "'. Key not found!"); return Collections.emptyList(); }
+		List<TomlObject<?>> tomlList = getTomlArray(key);
+		if(tomlList.isEmpty()) { return Collections.emptyList(); }
+		List<Double> list = new ArrayList<>(tomlList.size());
+		
+		for(TomlObject<?> objArrItem : tomlList)
+		{
+			if(objArrItem.getType() != TomlObjectType.DOUBLE)
+			{
+				Logg.error("Could not retrieve double list item '" + objArrItem.toString() + "'. Value is not a TOML string!");
+				continue;
+			}
+			
+			list.add((Double) objArrItem.get());
+		}
+		
+		return list;
+	}
+
+	@Override
+	public void set(String key,Object value)
+	{
+		String[] keys = convertKeyToTomlKey(key);
+		
+		if(!get().hasKey(keys[0]))
+		{
+			get().set(keys[0],new TomlTable(new ArrayList<>()));
+		}
+		
+		if(get().getTable(keys[0]).containsKey(keys[1]));
 	}
 }

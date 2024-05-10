@@ -220,4 +220,89 @@ public class YamlConfig implements DapeConfig
 	{
 		this.load();
 	}
+
+	@Override
+	public boolean hasKey(String key)
+	{
+		return get().contains(key);
+	}
+
+	@Override
+	public String getString(String key)
+	{
+		return get().getString(key);
+	}
+
+	@Override
+	public boolean getBoolean(String key)
+	{
+		return get().getBoolean(key);
+	}
+
+	@Override
+	public int getInt(String key)
+	{
+		return get().getInt(key);
+	}
+
+	@Override
+	public long getLong(String key)
+	{
+		return get().getLong(key);
+	}
+
+	@Override
+	public float getFloat(String key)
+	{
+		// No option to directly get a value as float... bruh
+		return (float) get().getDouble(key);
+	}
+
+	@Override
+	public double getDouble(String key)
+	{
+		return get().getDouble(key);
+	}
+
+	@Override
+	public List<String> getStringList(String key)
+	{
+		return get().getStringList(key);
+	}
+
+	@Override
+	public List<Boolean> getBooleanList(String key)
+	{
+		return get().getBooleanList(key);
+	}
+
+	@Override
+	public List<Integer> getIntList(String key)
+	{
+		return get().getIntegerList(key);
+	}
+
+	@Override
+	public List<Long> getLongList(String key)
+	{
+		return get().getLongList(key);
+	}
+
+	@Override
+	public List<Float> getFloatList(String key)
+	{
+		return get().getFloatList(key);
+	}
+
+	@Override
+	public List<Double> getDoubleList(String key)
+	{
+		return get().getDoubleList(key);
+	}
+
+	@Override
+	public void set(String key,Object value)
+	{
+		get().set(key,value);
+	}
 }

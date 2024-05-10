@@ -1,8 +1,8 @@
 package coffee.dape;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -18,7 +18,6 @@ import coffee.dape.config.DapeConfig;
 import coffee.dape.config.TomlConfig;
 import coffee.dape.listeners.TestLis;
 import coffee.dape.utils.ColourUtils;
-import coffee.dape.utils.FileOpUtils;
 import coffee.dape.utils.Logg;
 import coffee.dape.utils.tools.ClasspathCollector;
 import coffee.khyonieheart.lilac.value.TomlObject;
@@ -151,14 +150,40 @@ public final class Dape extends JavaPlugin
 		Path p = Paths.get(Dape.instance().getDataFolder().getPath() + File.separator + path);
 		
 		// Make sure directories are created or that they exist before returning path
+		
+		if (!p.getParent().toFile().exists())
+		{
+			// Create parent directories
+			if (!p.getParent().toFile().mkdirs())
+			{
+				Logg.fatal("Failed to create internal directory " + p.toString());
+				Dape.forceShutdown();
+			}
+		}
+
+		if (!p.toFile().exists())
+		{
+			try {
+				p.toFile().createNewFile();
+			} catch (IOException e) {
+				Logg.fatal("Failed to create internal file " + p.toString());
+			}
+		}
+
+		/*
 		if(Files.isRegularFile(p))
 		{
+			Logg.verb("Creating directories for file " + p.toString());
 			FileOpUtils.createDirectoriesForFile(p);
 		}
 		else
 		{
+			Logg.verb("Creating directories for file " + p.toString());
 			FileOpUtils.createDirectories(p);
 		}
+		*/
+
+		Logg.info("Is " + p.toString() + " a plain file? " + p.toFile().isFile());
 		
 		return p; 
 	}

@@ -17,6 +17,7 @@
  */
 package coffee.khyonieheart.lilac;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +36,16 @@ import coffee.khyonieheart.lilac.value.TomlLong;
 import coffee.khyonieheart.lilac.value.TomlObject;
 import coffee.khyonieheart.lilac.value.TomlShort;
 import coffee.khyonieheart.lilac.value.TomlString;
+import coffee.khyonieheart.lilac.value.TomlTable;
+import coffee.khyonieheart.lilac.value.formatting.TomlComment;
 
 /**
  * A utility that helps with creating a TOML configuration. Provides utilites for setting up defaults and sanity checking.
  */
 public class TomlConfigurationBuilder
 {
+	private static final String TOML_COMMENT_KEY = "Lilac#TomlComment";
+
 	private TomlObject<?> formattingTarget = null;
 	private TomlConfiguration configuration;
 
@@ -183,6 +188,30 @@ public class TomlConfigurationBuilder
 		return this.add(key, new TomlDouble(value));
 	}
 
+	// Table 
+	//--------------------------------------------------------------------------------
+	
+	public TomlConfigurationBuilder addTable(
+		String name,
+		String... parents
+	) {
+		Objects.requireNonNull(parents);
+		Objects.requireNonNull(name);
+
+		TomlTable table = new TomlTable(name, Arrays.asList(parents));
+
+		String[] path = new String[parents.length + 1];
+		int i = 0;
+		for (; i < parents.length; i++)
+		{
+			path[i] = parents[i];
+		}
+
+		path[i] = name; 
+
+		return this.add(table, path);
+	}
+
 	// Formatting
 	//-------------------------------------------------------------------------------- 
 	public TomlConfigurationBuilder setInlineComment(
@@ -202,6 +231,22 @@ public class TomlConfigurationBuilder
 		}
 
 		throw new IllegalArgumentException("Cannot insert comment on non-commentable type " + this.formattingTarget.getType().name());
+	}
+
+	public TomlConfigurationBuilder addComment(
+		String comment
+	) {
+		Objects.requireNonNull(comment);
+
+		int i = 0;
+		while (this.configuration.getBacking().containsKey(TOML_COMMENT_KEY + i))
+		{
+			i++;
+		}
+
+		this.configuration.getBacking().put(TOML_COMMENT_KEY + i, new TomlComment(comment));
+
+		return this;
 	}
 
 	public TomlConfigurationBuilder addWhitespace() 
