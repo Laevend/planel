@@ -31,7 +31,7 @@ public class ParserCommand extends AstralExecutor
 	{
 		super(ParserCommand.class);
 		
-		addPath("print cmd tree",CmdSender.PLAYER,new ArgSet().of("print-tree").of("<command>",ArgTypes.STRING,Suggestions.commandNames()).mapTo("cmdName"));
+		addPath("print cmd tree",CmdSender.ANY,new ArgSet().of("print-tree").of("<command>",ArgTypes.STRING,Suggestions.commandNames()).mapTo("cmdName"));
 		
 		addPath("print paths of command",CmdSender.ANY,new ArgSet().of("<commands>",ArgTypes.STRING,Suggestions.commandNames()).mapTo("cmdName"));
 		
@@ -42,7 +42,7 @@ public class ParserCommand extends AstralExecutor
 	public void printTree(CommandSender sender,@VMap("cmdName") String cmdName)
 	{
 		AstralExecutor executor = CommandFactory.getAstralCommandMap().get(cmdName);
-		Logg.verb("Command Tree: " + cmdName + "\n" + executor.getArgTree().toString());
+		Logg.verb("Command Tree: " + cmdName + "\n" + executor.getArgTree().toString(),Logg.VerbGroup.COMMANDS);
 	}
 	
 	@Path(name = "print paths of command",description = "Displays information about a command",syntax = "/parser <command>",usage = "/parser parser")

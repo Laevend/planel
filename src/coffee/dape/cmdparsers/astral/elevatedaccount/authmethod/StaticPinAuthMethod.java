@@ -1,6 +1,7 @@
 package coffee.dape.cmdparsers.astral.elevatedaccount.authmethod;
 
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import org.bukkit.entity.Player;
 
@@ -19,6 +20,10 @@ public final class StaticPinAuthMethod extends AuthenticationMethod
 	public StaticPinAuthMethod(final String hashedPin,final byte[] salt)
 	{
 		super(AuthMethod.STATIC_PIN);
+		
+		Objects.requireNonNull(hashedPin,"HashedPin cannot be null!");
+		Objects.requireNonNull(salt,"Salt cannot be null!");
+		
 		this.hashedPin = new SecureString(hashedPin);
 		this.salt = new SecureByteArray(salt);
 	}
@@ -26,8 +31,20 @@ public final class StaticPinAuthMethod extends AuthenticationMethod
 	public StaticPinAuthMethod(final SecureString pin)
 	{
 		super(AuthMethod.STATIC_PIN);
+		
+		Objects.requireNonNull(pin,"Pin cannot be null!");
+		
 		this.salt = new SecureByteArray(HashingUtils.generateSalt());
 		this.hashedPin = new SecureString(EncryptUtils.toBase64(HashingUtils.hash(pin.asString(),this.salt.asByteArray())));
+	}
+	
+	@Override
+	public boolean setup(Player player)
+	{
+		Objects.requireNonNull(player,"Player cannot be null!");
+		
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override

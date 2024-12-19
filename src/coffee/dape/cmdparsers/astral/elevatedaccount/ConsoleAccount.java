@@ -68,7 +68,7 @@ public final class ConsoleAccount extends RefillableIntervalClock
 		
 		this.pendingCommand = pendingCommand;
 		this.checksum = ObfuscatedRandBaseEncoder.encode(getCommandChecksum());
-		Logg.verb("New Console Account Pending Command");
+		Logg.verb("New Console Account Pending Command",Logg.VerbGroup.ELEVATED_ACCOUNT);
 		if(isEnabled()) { refill(); return; }
 		start();
 	}
@@ -95,6 +95,12 @@ public final class ConsoleAccount extends RefillableIntervalClock
 		
 		// Null checks
 		Objects.requireNonNull(value,"ConsoleAccount auth Value cannot be null!");
+		
+		if(!isSetup())
+		{
+			Logg.error("Cannot verify console pin as console account is not setup!");
+			return;
+		}
 		
 		// Check if player has a pending command at all to execute
 		if(!hasPendingCommand())
@@ -175,7 +181,7 @@ public final class ConsoleAccount extends RefillableIntervalClock
 		
 		// Clear the pending command when auth period expires to prevent a command loitering in memory
 		pendingCommand = new PendingCommand(null,null,null,null,null,new SecureRandom().nextLong());
-		Logg.verb("Pending command for ConsoleAccount was cleared automatically");
+		Logg.verb("Pending command for ConsoleAccount was cleared automatically",Logg.VerbGroup.ELEVATED_ACCOUNT);
 	}
 	
 	private final void incrementAttempt() throws IllegalMethodCallException

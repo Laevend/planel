@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * 
@@ -50,85 +53,6 @@ public class StringUtils
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Removes colour codes from a string.
-	 * Returns the string without any colour codes
-	 * @param stringWithColourCodes The string containing colour codes
-	 * @return A string free of colour codes
-	 */
-	public static String removeColourFromString(String stringWithColourCodes)
-	{
-		StringBuilder sb = new StringBuilder();
-		
-		Logg.verb("String before colour code remover: " + stringWithColourCodes);
-		
-		for(int i = 0; i < stringWithColourCodes.length(); i++)
-		{
-			// &, section sign symbol
-			if(stringWithColourCodes.charAt(i) != ((char) 38) && stringWithColourCodes.charAt(i) != ((char) 167))
-			{
-				sb.append(stringWithColourCodes.charAt(i));
-			}
-			else
-			{
-				i++;
-			}
-		}
-		
-		Logg.verb("String colour code remover produced: " + sb.toString());
-		
-		return sb.toString();
-	}
-	
-	/**
-	 * Replaces the section sign symbol to an and symbol (&)
-	 * This is done to ensure compatibility across OS's
-	 * @param list A list of strings containing section symbols
-	 * @return The same list with all section symbols converted to and symbols
-	 */
-	public static List<String> replaceColourSymbol(List<String> list)
-	{
-		List<String> stringWithAndSymbols = new ArrayList<>();
-		
-		list.forEach(v ->
-		{
-			stringWithAndSymbols.add(v.replace((char) 167,(char) 38));
-		});
-		
-		return stringWithAndSymbols;
-	}
-	
-	/**
-	 * Replaces the section sign symbol to an and symbol (&)
-	 * This is done to ensure compatibility across OS's
-	 * @param string A string containing section symbols
-	 * @return The same string with all section symbols converted to and symbols
-	 */
-	public static String replaceColourSymbol(String string)
-	{
-		return string.replace((char) 167,(char) 38);
-	}
-	
-	/**
-	 * Replaces all underscores in a string with spaces
-	 * @param s String
-	 * @return
-	 */
-	public static String underscoresToSpaces(String s)
-	{		
-		return s.replaceAll("_"," ");
-	}
-	
-	/**
-	 * Replaces all spaces in a string with underscores
-	 * @param s String
-	 * @return
-	 */
-	public static String spacesToUnderscores(String s)
-	{
-		return s.replaceAll(" ","_");
 	}
 	
 	/**
@@ -187,23 +111,6 @@ public class StringUtils
 		return sb.toString().substring(0,sb.toString().length() - 1);
 	}
 	
-	/**
-	 * Checks that the string is not null and that it
-	 * has a length of at least 1.
-	 * In other words, it checks that the string argument
-	 * past contains something other than just being empty.
-	 * @param s The string
-	 * @return true/false if this string contains at least 1 character and is not null
-	 */
-	public static boolean hasContents(String s)
-	{
-		if(s == null) { return false; }
-		
-		if(s.isEmpty()) { return false; }
-		
-		return true;
-	}
-	
 	public static boolean isNotNullEmptyOrBlank(String s)
 	{
 		return s != null && !s.isEmpty() && !s.isBlank();
@@ -229,9 +136,7 @@ public class StringUtils
 	 */
 	public static String capitaliseFirstLetter(String s)
 	{
-		String newString = String.valueOf(s.charAt(0)).toUpperCase();
-		newString = newString + s.substring(1,s.length());
-		return newString;
+		return s.substring(0,1).toUpperCase() + s.substring(1,s.length());
 	}
 	
 	/**
@@ -282,61 +187,9 @@ public class StringUtils
 		return sb.toString().substring(0,sb.toString().length() - 1);
 	}
 	
-	/**
-	 * Creates a new string name Id
-	 * 
-	 * <p>Just like how discord account names have text followed by a set of numbers,
-	 * This method will take a name and generate a string of numbers on the end to make
-	 * it somewhat unique. 
-	 * @param name String part of the ID
-	 * @param currentNames Set of all currently in use name IDs
-	 * @return new name ID
-	 */
-	public static String createNameID(String name_,Set<String> currentNames)
-	{
-		String name;
-		
-		if(name_.contains(" "))
-		{
-			name = name_.replace(" ","_");
-		}
-		else
-		{
-			name = name_;
-		}
-		
-		String newNameID = name + "-" + MathUtils.getRandomIntString(4);
-		
-		while(currentNames.contains(newNameID))
-		{
-			newNameID = name + "-" + MathUtils.getRandomIntString(4);
-		}
-		
-		return newNameID;
-	}
-	
 	public static String toSnakecase(String s)
 	{
 		return s.toLowerCase().replaceAll("\\s+","_");
-	}
-	
-	/**
-	 * Formats a lower case string with underscores by replacing underscores with spaces and capitalising every first letter
-	 * @param s String to format
-	 * @return formatted string
-	 */
-	public static String formatSnakecase(String s)
-	{
-		String[] matNameParts = s.toString().toLowerCase().split("_");
-		StringBuilder sb = new StringBuilder();
-		
-		for(String part : matNameParts)
-		{
-			sb.append(((char) (part.charAt(0) - 32)) + part.substring(1,part.length()) + " ");
-		}
-		
-		String matName = sb.toString();
-		return matName.substring(0,matName.length() - 1);
 	}
 	
 	private static final String[] romanLetters = {"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"}; 
@@ -479,6 +332,229 @@ public class StringUtils
         
         return loreList;
     }
+	
+	public static final char AND_SIGN = ((char) 38);
+	public static final char SECTION_SIGN = ((char) 167);
+	public static final char BACKSLASH_SIGN = '\\';
+	public static final Set<Character> COLOUR_CODES = new HashSet<>();
+	
+	static
+	{
+		for(char c : ChatColor.ALL_CODES.toCharArray())
+		{
+			COLOUR_CODES.add(c);
+		}
+	}
+	
+	/**
+	 * Wraps text into multiple lines
+	 * @param text Text to wrap
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapColouredText(String lore)
+	{
+		return wrapColouredText(lore,60,false,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @return
+	 */
+	public static List<String> wrapColouredText(String lore,int charsPerLine)
+	{
+		return wrapColouredText(lore,charsPerLine,false,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @param overflow If a wrap should happen every 'charsPerLine' + extra characters until the end of a word (default:false)
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapColouredText(String lore,int charsPerLine,boolean overflow)
+	{
+		return wrapColouredText(lore,charsPerLine,overflow,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @param overflow If a wrap should happen every 'charsPerLine' + extra characters until the end of a word (default:false)
+	 * @param wrapWords If a wrap should happen every 'charsPerLine' regardless if the wrap happens in the middle of a word (default:false)
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapColouredText(String text,int charsPerLine,boolean overflow,boolean wrapWords)
+	{
+		if(text.length() <= charsPerLine) { return List.of(text); }
+		
+		List<String> wrappedLore = new ArrayList<>();
+		char[] loreArr = text.toCharArray();
+		char[] lastColourSet = new char[2];
+		int currentCharsInLine = 0;
+		int subStringFromIndex = 0;
+		int lastWhitespaceIndex = 0;
+		
+		System.out.println("AND " + AND_SIGN);
+		System.out.println("SECTION " + SECTION_SIGN);
+		
+		for(int i = 0; i < loreArr.length; i++)
+		{
+			// Get next character
+			char nextChar = loreArr[i];
+			
+			// Make a note of the last point we encountered whitespace
+			if(Character.isWhitespace(nextChar)) { lastWhitespaceIndex = i; }
+			
+			// Wrap text
+			if(currentCharsInLine >= charsPerLine)
+			{
+				// If we want to wrap on a word we can split and wrap immediately
+				if(wrapWords)
+				{
+					wrappedLore.add(text.substring(subStringFromIndex,subStringFromIndex + charsPerLine));
+					subStringFromIndex = subStringFromIndex + charsPerLine;
+					currentCharsInLine = 0;
+				}
+				// If overflow is allowed, we need to also make sure we land on a whitespace character before we can split
+				else if(overflow && Character.isWhitespace(nextChar))
+				{
+					wrappedLore.add(text.substring(subStringFromIndex,i));
+					subStringFromIndex = i;
+					currentCharsInLine = 0;
+				}
+				// No word wrapping over overflow allowed, split and wrap at the last whitespace index
+				// +1 as to not include the space at the start of the new line
+				else if(!overflow)
+				{
+					wrappedLore.add(text.substring(subStringFromIndex,lastWhitespaceIndex + 1));
+					subStringFromIndex = lastWhitespaceIndex + 1;
+					currentCharsInLine = 0;
+				}
+			}
+			
+			System.out.println();
+			
+			System.out.println("Con1 " + (nextChar == AND_SIGN || nextChar == SECTION_SIGN));
+			System.out.println("Con2 " + (loreArr[i == 0 ? 0 : (i-1)] != BACKSLASH_SIGN));
+			System.out.println("Con3 " + COLOUR_CODES.contains(loreArr[i + 1 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 1]));
+			
+			System.out.println("Con2Extra: '" + loreArr[i == 0 ? 0 : (i-1)] + "'");
+			System.out.println("Con3Extra: '" + loreArr[i + 1 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 1] + "'");
+			
+			// If character is an and or section sign (meaning next character might be a colour code) 
+			if((nextChar == AND_SIGN || nextChar == SECTION_SIGN)
+					// Check the and or section sign is not being negated by a backslash (its functional use should be ignored)
+					&& loreArr[i == 0 ? 0 : (i-1)] != BACKSLASH_SIGN 
+					// Check the following character after the and or section sign is a valid colour code
+					&& COLOUR_CODES.contains(loreArr[i + 1 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 1]))
+			{
+				// Check ahead in the array as gradients and custom colours use many colour codes 1 after another
+				char nextSign = loreArr[i + 2 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 2];
+				char nextColour = loreArr[i + 3 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 3];
+				
+				// Multiple colours so skip to the most recent one
+				while((nextSign == AND_SIGN || nextSign == SECTION_SIGN) && COLOUR_CODES.contains(nextColour))
+				{
+					i+=2;
+					nextSign = loreArr[i + 2 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 2];
+					nextColour = loreArr[i + 3 > (loreArr.length - 1) ? (loreArr.length - 1) : i + 3];
+				}
+				
+				lastColourSet[0] = nextSign;
+				lastColourSet[1] = nextColour;
+				i++;
+				continue;
+			}
+			
+			System.out.println("Chars in line: " + currentCharsInLine);
+			System.out.println("Current char " + nextChar);
+			currentCharsInLine++;
+		}
+		
+		wrappedLore.add(text.substring(subStringFromIndex,loreArr.length));
+		return wrappedLore;
+	}
+	
+	/**
+	 * Wraps text into multiple lines. Will not work with colours!
+	 * @param text Text to wrap
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapText(String text)
+	{
+		return wrapText(text,60,false,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines. Will not work with colours!
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapText(String text,int charsPerLine)
+	{
+		return wrapText(text,charsPerLine,false,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines. Will not work with colours!
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @param overflow If a wrap should happen every 'charsPerLine' + extra characters until the end of a word (default:false)
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapText(String text,int charsPerLine,boolean overflow)
+	{
+		return wrapText(text,charsPerLine,overflow,false);
+	}
+	
+	/**
+	 * Wraps text into multiple lines. Will not work with colours!
+	 * @param text Text to wrap
+	 * @param charsPerLine Number of characters of text per line (default:60)
+	 * @param overflow If a wrap should happen every 'charsPerLine' + extra characters until the end of a word (default:false)
+	 * @param wrapWords If a wrap should happen every 'charsPerLine' regardless if the wrap happens in the middle of a word (default:true)
+	 * @return ArrayList of lore
+	 */
+	public static List<String> wrapText(String text,int charsPerLine,boolean overflow,boolean wrapWords)
+	{
+		if(text.length() <= charsPerLine) { return List.of(text); }
+		
+		List<String> wrappedText = new ArrayList<>();
+		char[] textArr = text.toCharArray();
+		int lowerPointer = 0;
+		int upperPointer = 0;
+		int lineNum = 1;
+		
+		while(upperPointer != textArr.length)
+		{
+			upperPointer = MathUtils.clamp(0,textArr.length,lineNum * charsPerLine);
+			
+			if(upperPointer == textArr.length)
+			{
+				wrappedText.add(text.substring(lowerPointer,textArr.length));
+				return wrappedText;
+			}
+			
+			if(!wrapWords)
+			{
+				while(!Character.isWhitespace(textArr[upperPointer]) && upperPointer > 0)
+				{
+					upperPointer = overflow ? upperPointer + 1 : upperPointer - 1;
+				}
+			}
+			
+			wrappedText.add(text.substring(lowerPointer,upperPointer));
+			lowerPointer = upperPointer;
+			lineNum++;
+		}
+		
+		return wrappedText;
+	}
 	
 	/**
 	 * Flips text to upside down

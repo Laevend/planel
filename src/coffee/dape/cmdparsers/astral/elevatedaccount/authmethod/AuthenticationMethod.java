@@ -16,6 +16,8 @@ public abstract class AuthenticationMethod
 		this.authMethod = method;
 	}
 	
+	public abstract boolean setup(final Player player);
+	
 	public abstract boolean verifyMethod(final String value,final Player player);
 	
 	public abstract String getAuthMessage();

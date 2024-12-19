@@ -54,7 +54,7 @@ public class PathMeta
 			if(arg.getMapId() == null || arg.getMapId().isEmpty() || arg.getMapId().isBlank()) { continue; }
 			
 			numberOfMappedArguments++;
-			Logg.verb("Mapped argument method '" + arg.getMapId() + "' for path " + this.pathMethod.getName());
+			Logg.verb("Mapped argument method '" + arg.getMapId() + "' for path " + this.pathMethod.getName(),Logg.VerbGroup.ASTRAL_PARSER);
 			usingMappedArguments = true;
 		}
 	}

@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import coffee.dape.Dape;
 import coffee.dape.cmdparsers.astral.annos.CommandEx;
+import coffee.dape.cmdparsers.astral.annos.Elevated;
 import coffee.dape.cmdparsers.astral.annos.Path;
 import coffee.dape.cmdparsers.astral.annos.VMap;
 import coffee.dape.cmdparsers.astral.elevatedaccount.ElevatedAccount;
@@ -33,12 +34,13 @@ import coffee.dape.utils.PlayerUtils;
 import coffee.dape.utils.PrintUtils;
 import coffee.dape.utils.security.ObfuscatedRandBaseEncoder;
 import coffee.dape.utils.security.SecureString;
+import coffee.dape.utils.structs.Namespace;
 
 
 /**
  * @author Laeven
  */
-//@Elevated
+@Elevated
 @CommandEx(name = "elevate",description = "A command for adding/removing elevated accounts to players")
 public class ElevateCommand extends AstralExecutor
 {
@@ -68,7 +70,7 @@ public class ElevateCommand extends AstralExecutor
 			return;
 		}
 		
-		ElevatedAccountCtrl.createElevatedAccount(p,pin);
+		ElevatedAccountCtrl.createNewElevatedAccount(p,pin);
 		ElevatedAccountCtrl.save(p.getUniqueId());
 		PrintUtils.success(con,"Created elevated account for " + p.getName() + " it will become active after a server restart.");
 	}
@@ -199,7 +201,7 @@ public class ElevateCommand extends AstralExecutor
 		{
 			if(meth.getAuthMethod() != AuthMethod.TIMED_OTP) { continue; }
 			PrintUtils.warn(p,"You are about to view your Totp secret! Make sure you are not streaming or recording to prevent leaks!");
-			ChatUtils.requestInput(p,"Enter 'yes' or 'y' to continue and view your totp secret.");
+			ChatUtils.requestInput(p,"Enter 'yes' or 'y' to continue and view your totp secret.",Namespace.of(Dape.getNamespaceName(),ChatUtils.HandlerNames.ELEVATED_ACCOUNTS_VIEW_SECRET));
 			return;
 		}
 		

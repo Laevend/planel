@@ -89,7 +89,7 @@ public class NMSPlayerUtils
 		PlayerConnection connection = entityPlayer.c;
 		connection.a(packet);
 		//connection.a(packet,null);
-		Logg.verb("Packet " + packet.getClass().getSimpleName() + " sent to " + player.getName());
+		Logg.verb("Packet " + packet.getClass().getSimpleName() + " sent to " + player.getName(),Logg.VerbGroup.NMSPLAYER);
 		
 		// 1.20.2
 		//NMSPlayerUtils.getNMSPlayer(player).c.a(packet,null);

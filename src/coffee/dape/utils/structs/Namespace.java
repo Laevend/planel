@@ -1,6 +1,7 @@
 package coffee.dape.utils.structs;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -12,6 +13,8 @@ public final class Namespace
 	private final String name;
 	private final String key;
 	private final String toString;
+	public static final Pattern namespaceStringPattern = Pattern.compile("^\\[Namespace:.+,Key:.+\\]$");
+	public static final Pattern namespaceSimpleStringPattern = Pattern.compile("^.+:.+$");
 	
 	/**
 	 * Creates a new namespace
@@ -22,6 +25,29 @@ public final class Namespace
 	public static final Namespace of(String namespaceName,String namespaceKey)
 	{
 		return new Namespace(namespaceName,namespaceKey);
+	}
+	
+	public static final Namespace fromString(String namespaceString)
+	{
+		Objects.requireNonNull(namespaceString,"Namespace string name cannot be null!");
+		
+		if(namespaceStringPattern.matcher(namespaceString).matches())
+		{
+			String[] namespaceAndKey = namespaceString.split(",");
+			String namespace = namespaceAndKey[0].split(":")[1];
+			String key = namespaceAndKey[1].split(":")[1];
+			return Namespace.of(namespace,key);
+		}
+		
+		if(namespaceSimpleStringPattern.matcher(namespaceString).matches())
+		{
+			String[] namespaceAndKey = namespaceString.split(":");
+			String namespace = namespaceAndKey[0];
+			String key = namespaceAndKey[1];
+			return Namespace.of(namespace,key);
+		}
+		
+		throw new IllegalArgumentException("Namespace string '" + namespaceString + "' could not be converted to a namespace as it is not correctly formatted!");
 	}
 	
 	private Namespace(String namespaceName,String namespaceKey)
@@ -56,5 +82,23 @@ public final class Namespace
 	public String toString()
 	{
 		return toString;
+	}
+	
+	public String toSimpleString()
+	{
+		return name + ":" + key;
+	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(!(o instanceof Namespace namespace)) { return false; }
+		return this.toString.equals(namespace.toString());
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return this.toString.hashCode();
 	}
 }

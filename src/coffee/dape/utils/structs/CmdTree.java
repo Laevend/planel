@@ -227,28 +227,28 @@ public class CmdTree
 			if(arg instanceof StaticArgument staticArg)
 			{
 				staticArgs.add(arg.getArgumentKey());
-				Logg.verb("Sorted static arg " + staticArg.getArgument());
+				Logg.verb("Sorted static arg " + staticArg.getArgument(),Logg.VerbGroup.ASTRAL_PARSER);
 				return;
 			}
 			
 			if(arg instanceof VarArgument varArg)
 			{
 				varArgs.add(arg.getArgumentKey());
-				Logg.verb("Sorted var arg " + varArg.getArgumentType().getTypeName());
+				Logg.verb("Sorted var arg " + varArg.getArgumentType().getTypeName(),Logg.VerbGroup.ASTRAL_PARSER);
 				return;
 			}
 			
 			if(arg instanceof ConVarArgument)
 			{
 				this.conVarArg = arg.getArgumentKey();
-				Logg.verb("Sorted con var arg");
+				Logg.verb("Sorted con var arg",Logg.VerbGroup.ASTRAL_PARSER);
 				return;
 			}
 			
 			if(arg instanceof PlayerVarArgument playerVarArg)
 			{
 				playerVarArgs.add(arg.getArgumentKey());
-				Logg.verb("Sorted player var arg " + playerVarArg.getPlayerArgumentType().getTypeName());
+				Logg.verb("Sorted player var arg " + playerVarArg.getPlayerArgumentType().getTypeName(),Logg.VerbGroup.ASTRAL_PARSER);
 				return;
 			}
 			
@@ -288,11 +288,11 @@ public class CmdTree
 				
 				if(it.hasNext())
 				{
-					next.print(buffer,childrenPrefix + "├── ",childrenPrefix + "│   ");
+					next.print(buffer,childrenPrefix + "├── ",childrenPrefix + "│   ");
 				}
 				else
 				{
-					next.print(buffer,childrenPrefix + "└── ",childrenPrefix + "    ");
+					next.print(buffer,childrenPrefix + "└── ",childrenPrefix + "    ");
 				}
 			}
 		}

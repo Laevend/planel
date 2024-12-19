@@ -30,6 +30,26 @@ public class ClasspathCollector
 	private CollectMode mode;
 	
 	/**
+	 * Convenient quick method to get a ClasspathCollector
+	 * @return ClasspathCollector
+	 */
+	public static ClasspathCollector collect()
+	{
+		return new ClasspathCollector();
+	}
+	
+	/**
+	 * Convenient quick method to get a ClasspathCollector
+	 * @param jar Jar file to be searched
+	 * @param loader ClassLoader to use
+	 * @return ClasspathCollector
+	 */
+	public static ClasspathCollector collect(Path jar,ClassLoader loader)
+	{
+		return new ClasspathCollector(jar,loader);
+	}
+	
+	/**
 	 * Create an instance of classpath collector with a .jar and class loader
 	 * @param jar Jar file to be searched
 	 * @param loader ClassLoader to use
@@ -136,11 +156,12 @@ public class ClasspathCollector
 					switch(mode)
 					{
 						// Collect classes that have an annotation
+						// Not including the class(s) provided
 						case BY_ANNOTATION:
 						{
 							Class<? extends Annotation> anno = (Class<? extends Annotation>) o;
 							
-							if(clazz.isAnnotationPresent(anno))
+							if(clazz.isAnnotationPresent(anno) && !anno.equals(clazz))
 							{
 								classpaths.add(classpath);
 							}
@@ -148,6 +169,7 @@ public class ClasspathCollector
 						}
 						
 						// Collect classes that are assignable (extend or implement) from a class/interface
+						// Not including the class(s) provided
 						case BY_ASSIGNABLE_FROM:
 						{
 							Class<?>[] exClasses = (Class<?>[]) o;
@@ -155,7 +177,7 @@ public class ClasspathCollector
 							CheckIfAssignable:
 							for(Class<?> eClazz : exClasses)
 							{
-								if(!eClazz.isAssignableFrom(clazz)) { continue CheckIfAssignable; }
+								if(!eClazz.isAssignableFrom(clazz) || eClazz.equals(clazz)) { continue CheckIfAssignable; }
 								
 								classpaths.add(classpath);
 							}

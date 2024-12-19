@@ -16,18 +16,25 @@ public final class EmailOTPAuthMethod extends AuthenticationMethod
 	{
 		super(AuthMethod.EMAIL_OTP);
 	}
+	
+	@Override
+	public boolean setup(Player player)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	@Override
-	public boolean verifyMethod(final String value,final Player player)
+	public boolean verifyMethod(final String otp,final Player player)
 	{
-		if(value.length() > 6)
+		if(otp.length() > 6)
 		{
 			incrementAttempt();
 			PrintUtils.error(player,"Authentication Failed, invalid passcode!");
 			return false;
 		}
 		
-		if(!value.matches("^\\d{6}$"))
+		if(!otp.matches("^\\d{6}$"))
 		{
 			incrementAttempt();
 			PrintUtils.error(player,"Authentication Failed, invalid passcode!");

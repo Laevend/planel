@@ -1,6 +1,7 @@
 package coffee.dape.utils;
 
 import java.awt.Color;
+import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -104,7 +105,7 @@ public class ColourUtils
 		int greenPart = (int) (col1.getGreen()*percent + col2.getGreen()*inverse_percent);
 		int bluePart = (int) (col1.getBlue()*percent + col2.getBlue()*inverse_percent);
 		
-		Logg.verb("NewCol: " + redPart + " " + greenPart + " " + bluePart);
+		Logg.verb("NewCol: " + redPart + " " + greenPart + " " + bluePart,Logg.VerbGroup.COLOUR_UTILS);
 		
 		return new Color(redPart, greenPart, bluePart);
 	}
@@ -162,6 +163,18 @@ public class ColourUtils
 	public static String applyColour(String string,String hex)
 	{
 		return ChatColor.of(hexToColour(hex)) + string;
+	}
+	
+	private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)(?:" + StringUtils.AND_SIGN + "|" + StringUtils.SECTION_SIGN + ")[0-9A-FK-ORX]");
+	
+	/**
+	 * Strips colour codes from the string (Better than ChatColor.stripColor() as we also strip colour codes using & sign)
+	 * @param input String to strip colour codes from
+	 * @return String without colour
+	 */
+	public static String strip(String input)
+	{
+		return STRIP_COLOR_PATTERN.matcher(input).replaceAll("");
 	}
 	
 	public static final Color LOGO = hexToColour("#af0e4b");

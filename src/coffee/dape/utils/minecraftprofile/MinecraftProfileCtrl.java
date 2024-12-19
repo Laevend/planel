@@ -66,13 +66,13 @@ public class MinecraftProfileCtrl implements Listener
 	{
 		if(forceAPICall)
 		{
-			Logg.verb("Forcing API Call..");
+			Logg.verb("Forcing API Call..",Logg.VerbGroup.MINECRAFT_PROFILE);
 			return getNewMinecraftProfile(uuid);
 		}
 		
 		if(profiles.containsKey(uuid))
 		{
-			Logg.verb("Profile found in memory cache");
+			Logg.verb("Profile found in memory cache",Logg.VerbGroup.MINECRAFT_PROFILE);
 			return profiles.get(uuid);
 		}
 		
@@ -81,7 +81,7 @@ public class MinecraftProfileCtrl implements Listener
 		
 		if(minecraftProfileDir.toFile().listFiles().length == 0)
 		{
-			Logg.verb("No file cache found!");
+			Logg.verb("No file cache found!",Logg.VerbGroup.MINECRAFT_PROFILE);
 			return getNewMinecraftProfile(uuid);
 		}
 		
@@ -89,12 +89,12 @@ public class MinecraftProfileCtrl implements Listener
 		
 		if(Files.exists(filePath))
 		{
-			Logg.verb("Profile found in file cache");
+			Logg.verb("Profile found in file cache",Logg.VerbGroup.MINECRAFT_PROFILE);
 			MinecraftProfile profile = new MinecraftProfileReader().fromJson(filePath.toFile());
 			return profile;
 		}
 		
-		Logg.verb("No memory or file cache found!");
+		Logg.verb("No memory or file cache found!",Logg.VerbGroup.MINECRAFT_PROFILE);
 		return getNewMinecraftProfile(uuid);
 	}
 	
@@ -128,18 +128,18 @@ public class MinecraftProfileCtrl implements Listener
 	{
 		if(uuidLookupTable.containsKey(playerName))
 		{
-			Logg.verb("UUID found in memory cache");
+			Logg.verb("UUID found in memory cache",Logg.VerbGroup.MINECRAFT_PROFILE);
 			return uuidLookupTable.get(playerName);
 		}
 		
 		if(PlayerUtils.isOnline(playerName))
 		{
-			Logg.verb("UUID found from online player");
+			Logg.verb("UUID found from online player",Logg.VerbGroup.MINECRAFT_PROFILE);
 			uuidLookupTable.put(playerName,PlayerUtils.getPlayer(playerName).getUniqueId());
 			return uuidLookupTable.get(playerName);
 		}
 		
-		Logg.verb("No uuid cache found, requesting api...");
+		Logg.verb("No uuid cache found, requesting api...",Logg.VerbGroup.MINECRAFT_PROFILE);
 		UUID uuid = getNewUUIDLookup(playerName);
 		
 		if(uuid == null) { Logg.error("MojangAPI returned null to UUID request"); return null; }

@@ -1,14 +1,11 @@
 package coffee.dape.utils.data;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_21_R1.persistence.CraftPersistentDataContainer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -24,31 +21,42 @@ import com.google.gson.JsonPrimitive;
 
 import coffee.dape.Dape;
 import coffee.dape.utils.Logg;
-import net.minecraft.nbt.NBTBase;
 
 public class DataUtils
 {
 	private static NamespacedKey dataKey = new NamespacedKey(Dape.instance(),"JSON_DATA_MAP");
 	private static Gson gsonPretty;
 	private static Gson gson;
-	private static final Set<Class<?>> PRIMITIVE_ARRAY_TYPES;
+	private static final Set<Class<?>> PRIMITIVE_ARRAY_TYPES = Set.of
+	(
+		int[].class,
+		float[].class,
+		double[].class,
+		boolean[].class,
+		byte[].class,
+		short[].class,
+		long[].class,
+		char[].class
+	);
+	private static final Set<PersistentDataType<?,?>> types = Set.of
+	(
+		PersistentDataType.BOOLEAN,
+		PersistentDataType.BYTE,
+		PersistentDataType.BYTE_ARRAY,
+		PersistentDataType.DOUBLE,
+		PersistentDataType.FLOAT,
+		PersistentDataType.INTEGER,
+		PersistentDataType.INTEGER_ARRAY,
+		PersistentDataType.LONG,
+		PersistentDataType.LONG_ARRAY,
+		PersistentDataType.SHORT,
+		PersistentDataType.STRING
+	);
 	
 	static
 	{
 		gsonPretty = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 		gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-		
-		PRIMITIVE_ARRAY_TYPES = Set.of
-		(
-			int[].class,
-			float[].class,
-			double[].class,
-			boolean[].class,
-			byte[].class,
-			short[].class,
-			long[].class,
-			char[].class
-		);
 	}
 	
 	/**
@@ -73,26 +81,6 @@ public class DataUtils
 	}
 	
 	/**
-	 * Checks if this ItemStack has data in the JSON data map
-	 * @param stack ItemStack
-	 * @return True if data is present, false otherwise
-	 */
-	public static boolean hasJData(ItemStack stack)
-	{
-		return hasJData(stack.getItemMeta());
-	}
-	
-	/**
-	 * Checks if this data holder has data in the JSON data map
-	 * @param dataHolder DataHolder
-	 * @return True if data is present, false otherwise
-	 */
-	public static boolean hasJData(PersistentDataHolder dataHolder)
-	{
-		return !getJContainer(dataHolder).entrySet().isEmpty();
-	}
-	
-	/**
 	 * Checks if this ItemStack has a key present
 	 * @param key The key used to access the data
 	 * @param stack ItemStack
@@ -113,48 +101,8 @@ public class DataUtils
 	{
 		PersistentDataContainer data = dataHolder.getPersistentDataContainer();
 		if(!hasData(dataHolder)) { return false; }
-		
 		NamespacedKey NSKey = new NamespacedKey(Dape.instance(),key);
-		
-		// Use faster method first
-		Map<String,NBTBase> tags = getCustomDataTags(data);
-		if(tags != null)
-		{
-			if(tags.containsKey(NSKey.toString())) { return true; }
-			return false;
-		}
-		
-		// Non-Reflection fail over
-		for(DType dType : DType.values())
-		{
-			PersistentDataType<?,?> type = dType.type;
-			if(!data.has(NSKey,type)) { continue; }
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Checks if this ItemStack has a key present in the JSON data map
-	 * @param key The key used to access the data
-	 * @param stack ItemStack
-	 * @return True if data is present, false otherwise
-	 */
-	public static boolean hasJ(String key,ItemStack stack)
-	{
-		return hasJ(key,stack.getItemMeta());
-	}
-	
-	/**
-	 * Checks if this data holder has a key present in the JSON data map
-	 * @param key The key used to access the data
-	 * @param dataHolder DataHolder
-	 * @return True if data is present, false otherwise
-	 */
-	public static boolean hasJ(String key,PersistentDataHolder dataHolder)
-	{
-		return getJContainer(dataHolder).has(key);
+		return data.getKeys().contains(NSKey);
 	}
 	
 	/**
@@ -181,28 +129,6 @@ public class DataUtils
 	}
 	
 	/**
-	 * Gets a value from the JSON data map
-	 * @param key The key used to access the data
-	 * @param stack ItemStack
-	 * @return DataContainerValue
-	 */
-	public static JsonElement getJ(String key,ItemStack stack)
-	{
-		return getJ(key,stack.getItemMeta());
-	}
-	
-	/**
-	 * Gets a value from the JSON data map
-	 * @param key The key used to access the data
-	 * @param dataHolder DataHolder
-	 * @return DataContainerValue
-	 */
-	public static JsonElement getJ(String key,PersistentDataHolder dataHolder)
-	{
-		return getJContainer(dataHolder).get(key);
-	}
-	
-	/**
 	 * Gets JSON data container for this data holder
 	 * @param dataHolder DataHolder
 	 * @return JsonDataContainer
@@ -226,10 +152,10 @@ public class DataUtils
 	 * @param value Value of this data
 	 * @param stack ItemStack
 	 */
-	public static void set(String key,DType type,Object value,ItemStack stack)
-	{		
+	public static void set(String key,Object value,ItemStack stack)
+	{
 		ItemMeta meta = stack.getItemMeta();
-		setNative(key,type,value,meta.getPersistentDataContainer());
+		setNative(key,value,meta.getPersistentDataContainer());
 		stack.setItemMeta(meta);
 	}
 	
@@ -240,9 +166,9 @@ public class DataUtils
 	 * @param value Value of this data
 	 * @param dataHolder DataHolder
 	 */
-	public static void set(String key,DType type,Object value,PersistentDataHolder dataHolder)
+	public static void set(String key,Object value,PersistentDataHolder dataHolder)
 	{
-		setNative(key,type,value,dataHolder.getPersistentDataContainer());
+		setNative(key,value,dataHolder.getPersistentDataContainer());
 	}
 	
 	/**
@@ -252,93 +178,36 @@ public class DataUtils
 	 * @param value Value of this data
 	 * @param container DataContainer
 	 */
-	private static void setNative(String key,DType type,Object value,PersistentDataContainer container)
+	private static void setNative(String key,Object value,PersistentDataContainer container)
 	{
 		NamespacedKey NSKey = new NamespacedKey(Dape.instance(),key);
+		Object firstArrayValue = value.getClass().isArray() ? Array.get(value,0) : null;
 		
-		// In order of how often I imagine they'd be used
-		if(type == DType.STRING)
+		switch(value)
 		{
-			String val = (String) value;
-			container.set(NSKey,PersistentDataType.STRING,val);
-			return;
+			case String val -> container.set(NSKey,PersistentDataType.STRING,val);
+			case Integer val -> container.set(NSKey,PersistentDataType.INTEGER,val);
+			case Boolean val -> container.set(NSKey,PersistentDataType.BOOLEAN,val);
+			case Float val -> container.set(NSKey,PersistentDataType.FLOAT,val);
+			case Long val -> container.set(NSKey,PersistentDataType.LONG,val);
+			case Double val -> container.set(NSKey,PersistentDataType.DOUBLE,val);
+			case Byte val -> container.set(NSKey,PersistentDataType.BYTE,val);
+			case Short val -> container.set(NSKey,PersistentDataType.SHORT,val);
+			case JsonObject val -> container.set(NSKey,PersistentDataType.STRING,gson.toJson(val));
+			default -> {}
 		}
 		
-		if(type == DType.INTEGER)
+		if(firstArrayValue == null)
 		{
-			int val = (int) value;
-			container.set(NSKey,PersistentDataType.INTEGER,val);
-			return;
+			throw new IllegalArgumentException("Unsupported value: " + value);
 		}
 		
-		if(type == DType.BOOLEAN)
+		switch(firstArrayValue)
 		{
-			boolean val = (boolean) value;
-			container.set(NSKey,PersistentDataType.BOOLEAN,val);
-			return;
-		}
-		
-		if(type == DType.FLOAT)
-		{
-			float val = (float) value;
-			container.set(NSKey,PersistentDataType.FLOAT,val);
-			return;
-		}
-		
-		if(type == DType.LONG)
-		{
-			long val = (long) value;
-			container.set(NSKey,PersistentDataType.LONG,val);
-			return;
-		}
-		
-		if(type == DType.DOUBLE)
-		{
-			double val = (double) value;
-			container.set(NSKey,PersistentDataType.DOUBLE,val);
-			return;
-		}
-		
-		if(type == DType.INTEGER_ARRAY)
-		{
-			int[] val = (int[]) value;
-			container.set(NSKey,PersistentDataType.INTEGER_ARRAY,val);
-			return;
-		}
-		
-		if(type == DType.LONG_ARRAY)
-		{
-			long[] val = (long[]) value;
-			container.set(NSKey,PersistentDataType.LONG_ARRAY,val);
-			return;
-		}
-		
-		if(type == DType.TAG_CONTAINER)
-		{
-			PersistentDataContainer val = (PersistentDataContainer) value;
-			container.set(NSKey,PersistentDataType.TAG_CONTAINER,val);
-			return;
-		}
-		
-		if(type == DType.BYTE)
-		{
-			byte val = (byte) value;
-			container.set(NSKey,PersistentDataType.BYTE,val);
-			return;
-		}
-		
-		if(type == DType.BYTE_ARRAY)
-		{
-			byte[] val = (byte[]) value;
-			container.set(NSKey,PersistentDataType.BYTE_ARRAY,val);
-			return;
-		}
-		
-		if(type == DType.SHORT)
-		{
-			short val = (short) value;
-			container.set(NSKey,PersistentDataType.SHORT,val);
-			return;
+			case Integer val -> container.set(NSKey,PersistentDataType.INTEGER_ARRAY,(int[]) value);
+			case Long val -> container.set(NSKey,PersistentDataType.LONG_ARRAY,(long[]) value);
+			case Byte val -> container.set(NSKey,PersistentDataType.BYTE_ARRAY,(byte[]) value);
+			default -> throw new IllegalArgumentException("Unsupported value: " + firstArrayValue);
 		}
 	}
 	
@@ -499,20 +368,6 @@ public class DataUtils
 		data.remove(NSKey);
 	}
 	
-	public static void removeJ(String key,ItemStack stack)
-	{
-		ItemMeta meta = stack.getItemMeta();
-		removeJ(key,meta);
-		stack.setItemMeta(meta);
-	}
-	
-	public static void removeJ(String key,PersistentDataHolder dataHolder)
-	{
-		JsonObject json = getJContainer(dataHolder);
-		json.remove(key);
-		setJContainer(json,dataHolder);
-	}
-	
 	/**
 	 * Clears all data on the container
 	 * @param stack ItemStack
@@ -538,28 +393,6 @@ public class DataUtils
 			NamespacedKey key = it.next();
 			data.remove(key);
 		}
-	}
-	
-	/**
-	 * Clears all data in the JSON data map
-	 * @param stack ItemStack
-	 */
-	public static void clearJ(ItemStack stack)
-	{
-		ItemMeta meta = stack.getItemMeta();
-		clearJ(meta);
-		stack.setItemMeta(meta);
-	}
-	
-	/**
-	 * Clears all data in the JSON data map
-	 * @param dataHolder DataHolder
-	 */
-	public static void clearJ(PersistentDataHolder dataHolder)
-	{
-		PersistentDataContainer container = dataHolder.getPersistentDataContainer();
-		container.remove(dataKey);		
-		container.set(dataKey,PersistentDataType.STRING,gson.toJson(new JsonObject()));
 	}
 	
 	/**
@@ -590,48 +423,47 @@ public class DataUtils
 		
 		for(NamespacedKey key : data.getKeys())
 		{
-			for(DType dType : DType.values())
+			for(PersistentDataType<?,?> type : types)
 			{
-				PersistentDataType<?,?> type = dType.type;
-				
 				if(!data.has(key,type)) { continue; }
 				
 				String displayKey = key.getNamespace() + ":" + key.getKey();
-				
-				Logg.info("");
-				
-				switch(dType)
+				Object value = data.get(key,type);
+				Logg.info("");				
+				switch(value)
 				{
-					case BYTE_ARRAY:
+					case Byte[] val:
 					{
 						Logg.info("&7{&eNSKey: " + displayKey + "&7}");
-						Logg.info("&7{&eType : " + dType.toString() + "&7}");
+						Logg.info("&7{&eType : " + type.getComplexType().getSimpleName() + "&7}");
 						Logg.info("&7{&eData : " + format((Byte[]) primToObjArray(data.get(key,type))) + "&7}");
 						break;
 					}
-					case INTEGER_ARRAY:
+					case Integer[] val:
 					{
 						Logg.info("&7{&eNSKey: " + displayKey + "&7}");
-						Logg.info("&7{&eType : " + dType.toString() + "&7}");
+						Logg.info("&7{&eType : " + type.getComplexType().getSimpleName() + "&7}");
 						Logg.info("&7{&eData : " + format((Integer[]) primToObjArray(data.get(key,type))) + "&7}");
 						break;
 					}
-					case LONG_ARRAY:
+					case Long[] val:
 					{
 						Logg.info("&7{&eNSKey: " + displayKey + "&7}");
-						Logg.info("&7{&eType : " + dType.toString() + "&7}");
+						Logg.info("&7{&eType : " + type.getComplexType().getSimpleName() + "&7}");
 						Logg.info("&7{&eData : " + format((Long[]) primToObjArray(data.get(key,type))) + "&7}");
 						break;
 					}
-					case TAG_CONTAINER:
+					case JsonObject val:
 					{
-						printContainer((PersistentDataContainer) data.get(key,type));
+						Logg.info("&7{&eNSKey: " + displayKey + "&7}");
+						Logg.info("&7{&eType : " + type.getComplexType().getSimpleName() + "&7}");
+						Logg.info("&7{&eData : " + gson.toJson(data.get(key,type)) + "&7}");
 						break;
 					}
 					default:
 					{
 						Logg.info("&7{&eNSKey: " + displayKey + "&7}");
-						Logg.info("&7{&eType : " + dType.toString() + "&7}");
+						Logg.info("&7{&eType : " + type.getComplexType().getSimpleName() + "&7}");
 						Logg.info("&7{&eData : " + data.get(key,type).toString() + "&7}");
 					}
 				}
@@ -733,51 +565,5 @@ public class DataUtils
 		
 		sb.append("]");
 		return sb.toString();
-	}
-	
-	/**
-	 * Uses reflection to get the internal customDataTags
-	 */
-	private static Map<String,NBTBase> getCustomDataTags(PersistentDataContainer con)
-	{
-		try
-		{
-			CraftPersistentDataContainer container = (CraftPersistentDataContainer) con;
-			Field f = CraftPersistentDataContainer.class.getDeclaredField("customDataTags");
-			f.setAccessible(true);
-			
-			@SuppressWarnings("unchecked")
-			Map<String,NBTBase> customDataTags = (Map<String, NBTBase>) f.get(container);
-			return customDataTags;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	public enum DType
-	{
-		BOOLEAN(PersistentDataType.BOOLEAN),
-		BYTE(PersistentDataType.BYTE),
-		BYTE_ARRAY(PersistentDataType.BYTE_ARRAY),
-		DOUBLE(PersistentDataType.DOUBLE),
-		FLOAT(PersistentDataType.FLOAT),
-		INTEGER(PersistentDataType.INTEGER),
-		INTEGER_ARRAY(PersistentDataType.INTEGER_ARRAY),
-		LONG(PersistentDataType.LONG),
-		LONG_ARRAY(PersistentDataType.LONG_ARRAY),
-		SHORT(PersistentDataType.SHORT),
-		STRING(PersistentDataType.STRING),
-		TAG_CONTAINER(PersistentDataType.TAG_CONTAINER);
-		
-		public PersistentDataType<?,?> type;
-		
-		DType(PersistentDataType<?,?> type)
-		{
-			this.type = type;
-		}
 	}
 }

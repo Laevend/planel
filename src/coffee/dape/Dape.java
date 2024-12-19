@@ -1,7 +1,8 @@
 package coffee.dape;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -16,17 +17,20 @@ import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import coffee.dape.cmdparsers.astral.elevatedaccount.ElevatedAccountCtrl;
-import coffee.dape.cmdparsers.astral.elevatedaccount.ElevatedAccountCtrl.SecretViewWarning;
 import coffee.dape.cmdparsers.astral.parser.CommandFactory;
 import coffee.dape.config.Configurable;
+import coffee.dape.config.Configure;
 import coffee.dape.config.DapeConfig;
 import coffee.dape.config.YamlConfig;
+import coffee.dape.feature.vaults.VaultCtrl;
+import coffee.dape.feature.wildfires.WildFiresCtrl;
 import coffee.dape.listeners.TestLis;
+import coffee.dape.utils.ChatUtils;
 import coffee.dape.utils.ColourUtils;
 import coffee.dape.utils.Logg;
 import coffee.dape.utils.MapUtils.ImageMapper;
 import coffee.dape.utils.data.DataUtils;
-import coffee.dape.utils.data.DataUtils.DType;
+import coffee.dape.utils.structs.Namespace;
 import coffee.dape.utils.tools.ClasspathCollector;
 
 public final class Dape extends JavaPlugin
@@ -56,6 +60,7 @@ public final class Dape extends JavaPlugin
 		configureLogger();
 		ElevatedAccountCtrl.init();
 		CommandFactory.collectAndInitLocal();
+		ChatUtils.init();
 		ImageMapper.load();
 		
 		initEndTime = System.currentTimeMillis();
@@ -64,9 +69,11 @@ public final class Dape extends JavaPlugin
 		
 		// For the time being until I built the auto listener register, we manually init
 		Bukkit.getPluginManager().registerEvents(new TestLis(),this);
-		Bukkit.getPluginManager().registerEvents(new ElevatedAccountCtrl(),this);
+		//Bukkit.getPluginManager().registerEvents(new ElevatedAccountCtrl(),this);
 		Bukkit.getPluginManager().registerEvents(new ImageMapper(),this);
-		Bukkit.getPluginManager().registerEvents(new SecretViewWarning(),this);
+		//Bukkit.getPluginManager().registerEvents(new SecretViewWarning(),this);
+		Bukkit.getPluginManager().registerEvents(new WildFiresCtrl(),this);
+		Bukkit.getPluginManager().registerEvents(new VaultCtrl(),this);
 	}
 	
 	@Override
@@ -90,22 +97,67 @@ public final class Dape extends JavaPlugin
 			{			
 				Class<?> configurableClass = Class.forName(clazz,false,Dape.class.getClassLoader());
 				
-				try
+				for(Method method : configurableClass.getDeclaredMethods())
 				{
-					Constructor<?> configurableConst = configurableClass.getDeclaredConstructor();
-					Configurable conf = (Configurable) configurableConst.newInstance();
-					defaults.putAll(conf.getDefaults());
-					Logg.Common.printOk(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
-				}
-				catch (Exception e)
-				{
-					Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+					// Lambda and switch cases used in command logic is registered as a method
+					if(method.getName().contains("$")) { continue; }
+					
+					// Ignore methods with no path annotation
+					if(!method.isAnnotationPresent(Configure.class)) { continue; }
+					
+					// Static check
+					if(!Modifier.isStatic(method.getModifiers()))
+					{
+						Logg.error("Configurable class " + configurableClass.getSimpleName() + " has a defaults collection method (" + method.getName() + ") that is not static!");
+						Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+						continue;
+					}
+					
+					// Invalid parameters check
+					if(method.getParameters().length != 0)
+					{
+						Logg.error("Configurable class " + configurableClass.getSimpleName() + " has a defaults collection method (" + method.getName() + ") with too many parameters!");
+						Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+						continue;
+					}
+					
+					Class<?> methodParam = method.getReturnType();
+					
+					// Return void type check
+					if(methodParam.getName().equals("void"))
+					{
+						Logg.error("Configurable class " + configurableClass.getSimpleName() + " has a defaults collection method (" + method.getName() + ") with a void return type! Expected Map<String,Object>!");
+						Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+						continue;
+					}
+					
+					// Return Map type check
+					if(!methodParam.getCanonicalName().equals(Map.class.getCanonicalName()))
+					{
+						Logg.error("Configurable class " + configurableClass.getSimpleName() + " has a defaults collection method (" + method.getName() + ") with an invalid return type! Expected Map<String,Object>, Got " + methodParam.getCanonicalName());
+						Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+						continue;
+					}
+					
+					// Parameterised check
+					try
+					{
+						@SuppressWarnings("unchecked")
+						Map<String,Object> retrievedDefaults = (Map<String, Object>) method.invoke(null);
+						defaults.putAll(retrievedDefaults);
+						Logg.Common.printOk(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+					}
+					catch(Exception e)
+					{
+						Logg.error("Configurable class " + configurableClass.getSimpleName() + " has a defaults collection method (" + method.getName() + ") with an invalid return parameterised types! Expected Map<String,Object>");
+						Logg.Common.printFail(Logg.Common.Component.CONFIG,"Collecting",configurableClass.getSimpleName());
+					}
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			Logg.fatal("Local configurables could not be initialised!",e);
+			Logg.fatal("Configurables could not be initialised!",e);
 		}
 		
 		/**
@@ -119,17 +171,20 @@ public final class Dape extends JavaPlugin
 	
 	private void configureLogger()
 	{
-		Logg.setHideVerbose(config.getBoolean("logger.hide_verbose.all"));
+		Logg.setHideVerbose(config.getBoolean("logger.hide_verbose"));
 		Logg.setHideWarnings(config.getBoolean("logger.hide_warnings"));
 		Logg.setHideErrors(config.getBoolean("logger.hide_errors"));
 		Logg.setHideFatals(config.getBoolean("logger.hide_fatals"));
 		Logg.setSilenceExceptions(config.getBoolean("logger.hide_exceptions"));
 		Logg.setWriteExceptions(config.getBoolean("logger.write_warnings"));
 		
-		List<String> enabledVerboseClasses = (List<String>) config.getStringList("logger.hide_verbose.class");
-		if(enabledVerboseClasses == null) { return; }
+		List<String> enabledVerboseGroups = (List<String>) config.getStringList("logger.verbose.enabled_groups");
+		if(enabledVerboseGroups == null) { return; }
 		
-		Logg.setEnabledVerboseClasses(enabledVerboseClasses);
+		for(String groupName : enabledVerboseGroups)
+		{
+			Logg.setVerboseGroupEnabled(Namespace.fromString(groupName),true);
+		}
 	}
 	
 	/**
@@ -272,7 +327,7 @@ public final class Dape extends JavaPlugin
 	 */
 	public static void setAsPluginManaged(Entity e)
 	{
-		DataUtils.set(DT_PLUGIN_MANAGED_ENTITY,DType.INTEGER,1,e);
+		DataUtils.set(DT_PLUGIN_MANAGED_ENTITY,1,e);
 	}
 	
 	/**

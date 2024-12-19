@@ -1,5 +1,6 @@
 package coffee.dape.utils;
 
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -143,6 +144,24 @@ public class MathUtils
 		for(int i = 0; i < numberOfInts; i++)
 		{
 			sb.append(getRandom(0,9));
+		}
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Gets a random string of integers using secure random
+	 * @param numberOfInts Number of Ints to generate
+	 * @return String of numbers
+	 */
+	public static String getSecureRandomIntString(int numberOfInts)
+	{
+		StringBuilder sb = new StringBuilder();
+		SecureRandom sr = new SecureRandom();
+		
+		for(int i = 0; i < numberOfInts; i++)
+		{
+			sb.append(sr.nextInt(0,10));
 		}
 		
 		return sb.toString();
@@ -379,6 +398,11 @@ public class MathUtils
 		int z = (int) (v.getZ() * -1);
     	return v.setZ(z);
     }
+	
+	public static double getDistance(double x1,double x2,double z1,double z2)
+	{
+		return Math.sqrt((z2 - z1) * (z2 - z1) + (x2 - x1) * (x2 - x1));
+	}
 	
 	public static double getDistance(int x1,int x2,int z1,int z2)
 	{

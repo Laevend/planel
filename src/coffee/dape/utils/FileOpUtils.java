@@ -1,7 +1,11 @@
 package coffee.dape.utils;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,12 +22,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 
  * @author Laeven
- * @since 1.0.0
+ *
  */
 public class FileOpUtils
 {
@@ -31,16 +37,15 @@ public class FileOpUtils
 	
 	/**
 	 * Creates directories while checking that is has permissions to do so
-	 * @param path Path of lowest directory
+	 * 
+	 * <p>This method assumed the Path being passed is a path to a directory and NOT a file</p>
+	 * @param path Path of directory
 	 * @return true if directory exists or has been created
 	 */
 	public static boolean createDirectories(Path path)
 	{
 		// If directory/file exists then there is no point running this method
 		if(Files.exists(path)) { return true; }
-		
-		// Check if path is a regular file, paths that have a file at the end should not be used in this method
-		if(Files.isRegularFile(path)) { return false; }
 		
 		// Checking lowest directory and working back to a directory that exists to check permissions before creating directory
 		if(Files.isDirectory(path))
@@ -65,26 +70,34 @@ public class FileOpUtils
 		return false;
 	}
 	
+	/**
+	 * Creates parent directories for this file path
+	 * 
+	 * <p>This method assumed the Path being passed is a path to a file and NOT a directory</p>
+	 * @param path Path to a file
+	 * @return If directories were created successfully
+	 */
 	public static boolean createDirectoriesForFile(Path path)
 	{
 		// If directory/file exists then there is no point running this method
 		if(Files.exists(path)) { return true; }
-		
-		// Check if path is a directory, paths that have a directory at the end should not be used in this method
-		if(Files.isDirectory(path)) { return false; }
 		
 		// Create directories for file if they don't already exist
 		if(!createDirectories(path.getParent())) { return false; }
 		return true;
 	}
 	
+	/**
+	 * Creates a blank file at this paths location
+	 * 
+	 * <p>This method assumed the Path being passed is a path to a file and NOT a directory</p>
+	 * @param path Path to a file
+	 * @return If blank file was created successfully
+	 */
 	public static boolean createFile(Path path)
 	{
 		// If directory/file exists then there is no point running this method
 		if(Files.exists(path)) { return true; }
-		
-		// Check if path is a directory, paths that have a directory at the end should not be used in this method
-		if(Files.isDirectory(path)) { return false; }
 		
 		// Create directories for file if they don't already exist
 		if(!createDirectories(path.getParent())) { return false; }
@@ -102,6 +115,14 @@ public class FileOpUtils
 		return false;
 	}
 	
+	/**
+	 * Creates a blank file with a specific size at this paths location
+	 * 
+	 * <p>This method assumed the Path being passed is a path to a file and NOT a directory</p>
+	 * @param lengthOfFile File size in bytes
+	 * @param path Path to a file
+	 * @return If blank file was created successfully
+	 */
 	public static boolean createFile(long lengthOfFile,Path path)
 	{
 		if(Files.exists(path)) { return true; }
@@ -429,5 +450,60 @@ public class FileOpUtils
 		}
 		
 		return paths;
+	}
+	
+	public static List<String> readCSV(Path pathToCSV)
+	{
+		if(!Files.exists(pathToCSV)) { Logg.error("Path to CSV does not exist!"); return Collections.emptyList(); }
+		if(!Files.isRegularFile(pathToCSV)) { Logg.error("Path does not point to regular file!"); return Collections.emptyList(); }
+		
+		List<String> csv = new ArrayList<>();
+		
+		try(FileReader fr = new FileReader(pathToCSV.toFile()); BufferedReader br = new BufferedReader(fr))
+        {
+        	String line = br.readLine();
+        	
+        	while(line != null)
+        	{
+        		csv.add(line);
+        		line = br.readLine();
+        	}
+        	
+        	br.close();
+        	fr.close();
+        	
+        	return csv;
+        }
+        catch(IOException e)
+        {
+        	Logg.error("Could not read CSV from disk!",e);
+        }
+	
+		return Collections.emptyList();
+	}
+	
+	public static boolean writeCSV(Path pathToCSV,List<String> csv)
+	{
+		createDirectoriesForFile(pathToCSV);
+		
+		try(FileWriter fw = new FileWriter(pathToCSV.toFile()); BufferedWriter bw = new BufferedWriter(fw))
+        {
+			for(String line : csv)
+			{
+				bw.write(line);
+	    		bw.newLine();
+			}
+        	
+        	bw.close();
+        	fw.close();
+        	
+        	return true;
+        }
+        catch(IOException e)
+        {
+        	Logg.error("Could not write CSV to disk!",e);
+        }
+		
+		return false;
 	}
 }

@@ -17,6 +17,7 @@
  */
 package coffee.khyonieheart.lilac;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import coffee.khyonieheart.lilac.value.TomlLong;
 import coffee.khyonieheart.lilac.value.TomlObject;
 import coffee.khyonieheart.lilac.value.TomlShort;
 import coffee.khyonieheart.lilac.value.TomlString;
+import coffee.khyonieheart.lilac.value.TomlTable;
 
 /**
  * A utility that helps with creating a TOML configuration. Provides utilites for setting up defaults and sanity checking.
@@ -181,6 +183,30 @@ public class TomlConfigurationBuilder
 		double value
 	) {
 		return this.add(key, new TomlDouble(value));
+	}
+
+	// Table 
+	//--------------------------------------------------------------------------------
+	
+	public TomlConfigurationBuilder addTable(
+		String name,
+		String... parents
+	) {
+		Objects.requireNonNull(parents);
+		Objects.requireNonNull(name);
+
+		TomlTable table = new TomlTable(name, Arrays.asList(parents));
+
+		String[] path = new String[parents.length + 1];
+		int i = 0;
+		for (; i < parents.length; i++)
+		{
+			path[i] = parents[i];
+		}
+
+		path[i] = name; 
+
+		return this.add(table, path);
 	}
 
 	// Formatting

@@ -41,6 +41,13 @@ public final class TimedOTPAuthMethod extends AuthenticationMethod
 		this.secret = new SecureString(secret);
 	}
 	
+	@Override
+	public boolean setup(Player player)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 	public String getURL(UUID player)
 	{
 		return OTP.getURL(secret.asString(),6,Type.TOTP,StringUtils.capitaliseFirstLetter(Dape.getNamespaceName().toLowerCase()),PlayerUtils.getName(player));

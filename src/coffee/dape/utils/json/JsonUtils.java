@@ -59,8 +59,8 @@ public class JsonUtils
 		
 		String gsonObjString = gson.toJson(obj);
 		
-		Logg.verb("path " + path.toString());
-		Logg.verb("parent file " + path.getParent().toString());
+		Logg.verb("path " + path.toString(),Logg.VerbGroup.JSON_UTILS);
+		Logg.verb("parent file " + path.getParent().toString(),Logg.VerbGroup.JSON_UTILS);
 		
 		// Check the directory exists
 		FileOpUtils.createDirectoriesForFile(path);
@@ -89,8 +89,8 @@ public class JsonUtils
 	 */
 	public static boolean toJsonFile(Path path,JsonObject obj)
 	{
-		Logg.verb("path " + path.toString());
-		Logg.verb("parent file " + path.getParent().toString());
+		Logg.verb("path " + path.toString(),Logg.VerbGroup.JSON_UTILS);
+		Logg.verb("parent file " + path.getParent().toString(),Logg.VerbGroup.JSON_UTILS);
 		
 		// Check the directory exists
 		FileOpUtils.createDirectoriesForFile(path);

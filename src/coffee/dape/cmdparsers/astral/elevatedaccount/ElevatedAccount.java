@@ -88,6 +88,7 @@ public final class ElevatedAccount extends RefillableIntervalClock
 		
 		this.pendingCommand = pendingCommand;
 		this.checksum = ObfuscatedRandBaseEncoder.encode(getCommandChecksum());
+		resetAuthLvl();
 		if(isEnabled()) { refill(); return; }
 		start();
 	}
@@ -149,6 +150,8 @@ public final class ElevatedAccount extends RefillableIntervalClock
 		
 		// clamp auth level
 		authLvl = authMethods.size() == 1 ? 0 : MathUtils.clamp(0,authMethods.size() - 1,authLvl);
+		
+		System.out.println("authlvl " + authLvl);
 		
 		AuthenticationMethod meth = authMethods.get((int) authLvl);
 		
@@ -220,7 +223,7 @@ public final class ElevatedAccount extends RefillableIntervalClock
 		
 		// Clear the pending command when auth period expires to prevent a command loitering in memory
 		pendingCommand = new PendingCommand(null,null,null,null,null,new SecureRandom().nextLong());
-		Logg.verb("Pending command for ElevatedAccount " + PlayerUtils.getName(owner) + " was cleared automatically");
+		Logg.verb("Pending command for ElevatedAccount " + PlayerUtils.getName(owner) + " was cleared automatically",Logg.VerbGroup.ELEVATED_ACCOUNT);
 	}
 	
 	private final long getCommandChecksum()
@@ -269,6 +272,15 @@ public final class ElevatedAccount extends RefillableIntervalClock
 	public List<AuthenticationMethod> getAuthMethods()
 	{
 		return authMethods;
+	}
+	
+	/**
+	 * Resets the authorisation stage to 0 in the event another command is executed before a
+	 * player gets through all auth lvls to run the pending command.
+	 */
+	public void resetAuthLvl()
+	{
+		this.authLvl = ObfuscatedRandBaseEncoder.encodeAndReplace(0,this.authLvl);
 	}
 
 	/**

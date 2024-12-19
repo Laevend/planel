@@ -19,7 +19,6 @@ import coffee.dape.utils.PrintUtils;
 import coffee.dape.utils.StringUtils;
 import coffee.dape.utils.structs.CmdTree.Node;
 import coffee.dape.utils.structs.Pair;
-import coffee.dape.utils.structs.VTree;
 import xdrop.fuzzywuzzy.FuzzySearch;
 
 /**
@@ -63,9 +62,9 @@ public class CommandParser
 		// Player executor only active if sender is player
 		if(sender instanceof Player p) {playerExecutor = p;} 
 		
-		Logg.verb("Parsing Command -> &a'" + commandName + "'");
-		Logg.verb("Args Length Before morph -> " + rawArgs.length);
-		Logg.verb("Args before morph -> " + Arrays.asList(rawArgs));
+		Logg.verb("Parsing Command -> &a'" + commandName + "'",Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("Args Length Before morph -> " + rawArgs.length,Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("Args before morph -> " + Arrays.asList(rawArgs),Logg.VerbGroup.ASTRAL_PARSER);
 		
 		// Prepare new array for arguments after being restructured
 		String[] args;
@@ -87,15 +86,15 @@ public class CommandParser
 			args = rawArgs;
 		}
 		
-		Logg.verb("Args after morph -> " + Arrays.asList(args));
-		Logg.verb("Arg Length Post PrePro -> " + args.length);
-		Logg.verb("Parsing...");
+		Logg.verb("Args after morph -> " + Arrays.asList(args),Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("Arg Length Post PrePro -> " + args.length,Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("Parsing...",Logg.VerbGroup.ASTRAL_PARSER);
 		
 		// Recursive Tree Parsing
 		if(!traverseCommandTree(args,executor.getArgTree().getRoot(),false).getValueA()) { return new ParseResult(false,true); }
 		
-		Logg.verb("Parsing Succeeded! Chosen Method -> " + chosenPath);
-		Logg.verb("Checking Permission...");
+		Logg.verb("Parsing Succeeded! Chosen Method -> " + chosenPath,Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("Checking Permission...",Logg.VerbGroup.ASTRAL_PARSER);
 		
 		// Permission Check
 		PathMeta meta = executor.getPathMeta().get(chosenPath);
@@ -133,7 +132,7 @@ public class CommandParser
 			return new ParseResult(false,true);
 		}
 		
-		Logg.verb("Parse passed checks");
+		Logg.verb("Parse passed checks",Logg.VerbGroup.ASTRAL_PARSER);
 		
 		// Parse successful return result
 		return new ParseResult(true,chosenPath,args,sender,mappedArgs);
@@ -174,8 +173,8 @@ public class CommandParser
 		String longStringParts[] = argumentString.split("\"");
 		List<String> newArgs = new ArrayList<>();
 		
-		Logg.verb("Parts -> " + Arrays.asList(longStringParts));
-		Logg.verb("length -> " + longStringParts.length);
+		Logg.verb("Parts -> " + Arrays.asList(longStringParts),Logg.VerbGroup.ASTRAL_PARSER);
+		Logg.verb("length -> " + longStringParts.length,Logg.VerbGroup.ASTRAL_PARSER);
 		
 		Loop1:
 		for(int i = 0; i < longStringParts.length; i++)
@@ -214,7 +213,7 @@ public class CommandParser
 		// Look at next argument
 		argIndex++;
 		
-		Logg.verb("Arg Index : " + argIndex);
+		Logg.verb("Arg Index : " + argIndex,Logg.VerbGroup.ASTRAL_PARSER);
 		
 		if(isCalledByTabComplete && argIndex == (args.length - 1))
 		{
@@ -224,7 +223,7 @@ public class CommandParser
 		// Reached end of arguments, check for an end node
 		if(argIndex == args.length || args.length == 0)
 		{
-			Logg.verb("Arg length is 0 or is ended");
+			Logg.verb("Arg length is 0 or is ended",Logg.VerbGroup.ASTRAL_PARSER);
 			
 			if(node.isEndNode())
 			{
@@ -238,7 +237,7 @@ public class CommandParser
 		// Check static args first
 		if(node.getStaticArgs().contains(args[argIndex]))
 		{
-			Logg.verb("Chosen argument (Static): " + args[argIndex]);
+			Logg.verb("Chosen argument (Static): " + args[argIndex],Logg.VerbGroup.ASTRAL_PARSER);
 			
 			StaticArgument staticArg = (StaticArgument) node.branches.get(args[argIndex]).getValue();
 			
@@ -435,7 +434,7 @@ public class CommandParser
 			}
 		}
 		
-		Logg.verb("No argument branches found and no end branches @ " + argIndex);
+		Logg.verb("No argument branches found and no end branches @ " + argIndex,Logg.VerbGroup.ASTRAL_PARSER);
 		
 		// Create suggestions
 		return Pair.of(false,Collections.emptyList());
@@ -456,7 +455,7 @@ public class CommandParser
 		// If next argument is empty, show all options
 		if(args[argIndex].length() == 0)
 		{
-			Logg.verb("Getting next arguments...");
+			Logg.verb("Getting next arguments...",Logg.VerbGroup.ASTRAL_PARSER);
 			return getSuggestions(args,node);
 		}
 //		else if(argIndex < (args.length - 1))
@@ -466,7 +465,7 @@ public class CommandParser
 //		}
 		else
 		{
-			Logg.verb("Estimating...");
+			Logg.verb("Estimating...",Logg.VerbGroup.ASTRAL_PARSER);
 			return estimate(args,node);
 		}
 	}
@@ -483,7 +482,7 @@ public class CommandParser
 	{
 		if(args_.length == 0) { return args_; }
 		
-		Logg.verb("Array before tidy: " + Arrays.asList(args_));
+		Logg.verb("Array before tidy: " + Arrays.asList(args_),Logg.VerbGroup.ASTRAL_PARSER);
 		
 		String morphedArgs[] = concatenateQuoteArguments(args_);
 		List<String> list = new ArrayList<>();
@@ -507,7 +506,7 @@ public class CommandParser
 			newArgs = list.toArray(new String[list.size()]);
 		}
 		
-		Logg.verb("Array after tidy: " + Arrays.asList(newArgs));
+		Logg.verb("Array after tidy: " + Arrays.asList(newArgs),Logg.VerbGroup.ASTRAL_PARSER);
 		
 		return newArgs;
 	}
@@ -522,7 +521,7 @@ public class CommandParser
 	 */
 	private static List<String> getSuggestions(String args[],Node node)
 	{		
-		Logg.verb("Getting Suggestions");
+		Logg.verb("Getting Suggestions",Logg.VerbGroup.ASTRAL_PARSER);
 		
 		if(node.branches.isEmpty()) { return Collections.emptyList(); }
 		
@@ -556,15 +555,15 @@ public class CommandParser
 	}
 	
 	/**
-	 * Called from the {@link #findMatch(VTree, String[])} method,
+	 * Called from the {@link #displaySuggestions(String[], Node)} method, 
 	 * The next argument has been determined as partially typed but
 	 * not completed.
 	 * This method will trim the total number of next possible arguments
 	 * down to those who match the characters the argument typed starts
 	 * with.
 	 * 
-	 * @param tree The VTree for this tab complete architecture
 	 * @param args The arguments typed by the player
+	 * @param node A node in the command tree
 	 * @return A trimmed list of all possible next arguments
 	 */
 	private static List<String> estimate(String[] args,Node node)

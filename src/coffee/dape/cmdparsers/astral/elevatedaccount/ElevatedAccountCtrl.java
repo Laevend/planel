@@ -17,8 +17,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import coffee.dape.Dape;
@@ -26,10 +24,12 @@ import coffee.dape.cmdparsers.astral.elevatedaccount.authmethod.AuthenticationMe
 import coffee.dape.cmdparsers.astral.elevatedaccount.authmethod.StaticPinAuthMethod;
 import coffee.dape.cmdparsers.astral.elevatedaccount.authmethod.TimedOTPAuthMethod;
 import coffee.dape.config.Configurable;
+import coffee.dape.config.Configure;
 import coffee.dape.event.ChatInputEvent;
 import coffee.dape.exception.IllegalMethodCallException;
 import coffee.dape.utils.ChatBuilder;
 import coffee.dape.utils.ChatUtils;
+import coffee.dape.utils.ChatUtils.InputHandler;
 import coffee.dape.utils.ColourUtils;
 import coffee.dape.utils.FileOpUtils;
 import coffee.dape.utils.Logg;
@@ -37,8 +37,11 @@ import coffee.dape.utils.MapUtils;
 import coffee.dape.utils.MathUtils;
 import coffee.dape.utils.PlayerUtils;
 import coffee.dape.utils.PrintUtils;
+import coffee.dape.utils.chat.InputListener;
+import coffee.dape.utils.security.Bouncer;
 import coffee.dape.utils.security.HashingUtils;
 import coffee.dape.utils.security.SecureString;
+import coffee.dape.utils.structs.Namespace;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
@@ -46,7 +49,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
  * @author Laeven
  * Controller for ElevatedAccounts
  */
-public class ElevatedAccountCtrl implements Configurable, Listener
+public class ElevatedAccountCtrl implements Configurable, InputListener
 {
 	private static final Map<UUID,ElevatedAccount> accounts;
 	private static ConsoleAccount conAcc;
@@ -55,7 +58,6 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 	protected static final int FALSE;
 	private static ConsoleSetupPhase consoleSetupPhase = ConsoleSetupPhase.NONE;
 	private static SecureString[] newPinTest = new SecureString[2];
-	private static UUID inputSessionId = null;
 	
 	static
 	{
@@ -78,6 +80,9 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		if(!ConsoleAccount.isSetup())
 		{
 			conAcc = new ConsoleAccount();
+			Logg.print();
+			Logg.fatal("Dape could not find a console account, create a new console account using /console setup");
+			Logg.print();
 			return;
 		}
 		
@@ -97,11 +102,10 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		loadAll();
 	}
 	
-	@EventHandler
+	@InputHandler(ChatUtils.HandlerNames.ELEVATED_ACCOUNTS_CONSOLE_SETUP)
 	public final static void onChatInput(ChatInputEvent e)
 	{
-		// Check input session id is matching that given by the request
-		if(!e.getInputSessionId().equals(inputSessionId)) { return; }
+		Player p = e.getPlayer();
 		
 		if(consoleSetupPhase == null || consoleSetupPhase == ConsoleSetupPhase.NONE)
 		{
@@ -112,49 +116,16 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		if(consoleSetupPhase == ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_1)
 		{
 			newPinTest[0] = new SecureString(e.getInput());
-			setupConsoleAccount(e.getPlayer());
-			return;
-		}
-		
-		if(consoleSetupPhase == ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_2)
-		{
-			newPinTest[1] = new SecureString(e.getInput());
-			setupConsoleAccount(e.getPlayer());
-			return;
-		}
-	}
-	
-	/**
-	 * Method for first time setup of console auth
-	 * @param p Player setting up console account
-	 */
-	public final static void setupConsoleAccount(Player p)
-	{
-		Objects.requireNonNull(p,"Player cannot be null!");
-		
-		// Prevents re-setting up
-		if(ConsoleAccount.isSetup()) { return; }
-		
-		if(consoleSetupPhase == null || consoleSetupPhase == ConsoleSetupPhase.NONE)
-		{
-			consoleSetupPhase = ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_1;
-			inputSessionId = ChatUtils.requestInput(p,"Enter a pin/password that will be used to authorise any elevated commands via the console");
-			return;
-		}
-		
-		if(consoleSetupPhase == ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_1)
-		{
 			consoleSetupPhase = ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_2;
-			inputSessionId = ChatUtils.requestInput(p,"To confirm, enter the same pin/password again");
+			ChatUtils.requestInput(p,"To confirm, enter the same pin/password again",Namespace.of(Dape.getNamespaceName(),ChatUtils.HandlerNames.ELEVATED_ACCOUNTS_CONSOLE_SETUP));
 			return;
 		}
 		
 		if(consoleSetupPhase != ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_2) { return; }
 		consoleSetupPhase = ConsoleSetupPhase.NONE;
+		newPinTest[1] = new SecureString(e.getInput());
 		
 		String pin = newPinTest[0].asString();
-		
-		PrintUtils.warn(p,"Pin '" + pin + "' ");
 		
 		if(pin.isEmpty()) { PrintUtils.error(p,"Pin/Password cannot be empty!"); return; }
 		if(pin.isBlank()) { PrintUtils.error(p,"Pin/Password cannot be blank!"); return; }
@@ -162,8 +133,6 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		if(pin.matches("\\s+")) { PrintUtils.error(p,"Pin/Password cannot contain space characters!"); return; }
 		
 		byte[] tempSalt = HashingUtils.generateSalt();
-		
-		PrintUtils.warn(p,"Pin '" + pin + "' ");
 		
 		if(!HashingUtils.hashToString(newPinTest[0].asString(),tempSalt).equals(HashingUtils.hashToString(newPinTest[1].asString(),tempSalt)))
 		{
@@ -175,9 +144,9 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		{
 			conAcc.setPin(new SecureString(pin));
 		}
-		catch (IllegalMethodCallException e)
+		catch (IllegalMethodCallException ex)
 		{
-			e.printStackTrace();
+			ex.printStackTrace();
 		}
 		
 		// overwrite memory
@@ -187,19 +156,40 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		
 		try
 		{
+			FileOpUtils.createDirectoriesForFile(Dape.internalFilePath("elevated" + File.separator + "console"));
 			Files.write(Dape.internalFilePath("elevated" + File.separator + "console"),new String(conAcc.getHashedPin().asString() + "," + Base64.getEncoder().encodeToString(conAcc.getSalt().asByteArray())).getBytes());
 		}
-		catch (IOException e)
+		catch (IOException ex)
 		{
-			Logg.error("Could not save console account pin/password!",e);
+			Logg.error("Could not save console account pin/password!",ex);
 			return;
 		}
 		
 		PrintUtils.success(p,"Console setup complete!");
 	}
 	
-	public static void createElevatedAccount(Player p,SecureString pin)
+	/**
+	 * Method for first time setup of console auth
+	 * @param p Player setting up console account
+	 */
+	public final static void setupConsoleAccount(Player p)
 	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		Bouncer.probe();
+		
+		// Prevents re-setting up
+		if(ConsoleAccount.isSetup()) { return; }
+		if(consoleSetupPhase != null && consoleSetupPhase != ConsoleSetupPhase.NONE) { return; }
+		
+		consoleSetupPhase = ConsoleSetupPhase.ASKING_FOR_PIN_OR_PASSWORD_1;
+		ChatUtils.requestInput(p,"Enter a pin/password that will be used to authorise any elevated commands via the console",Namespace.of(Dape.getNamespaceName(),ChatUtils.HandlerNames.ELEVATED_ACCOUNTS_CONSOLE_SETUP));
+	}
+	
+	public static void createNewElevatedAccount(Player p,SecureString pin)
+	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		Objects.requireNonNull(pin,"Pin cannot be null!");
+		
 		if(accounts.containsKey(p.getUniqueId())) { return; }
 		if(Files.exists(Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + p.getUniqueId().toString() + ".json"))) { return; }
 		
@@ -207,8 +197,10 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		new ElevatedAccountWriter().toJson(newAcc,Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + p.getUniqueId().toString() + ".json"));
 	}
 	
-	public static void createElevatedAccount(UUID uuid)
+	public static void createExistingElevatedAccount(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		if(accounts.containsKey(uuid)) { return; }
 		if(Files.exists(Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + uuid.toString() + ".json"))) { return; }
 		
@@ -218,36 +210,50 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 	
 	public static boolean hasElevatedAccount(Player p)
 	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		
 		return accounts.containsKey(p.getUniqueId()) || Files.exists(Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + p.getUniqueId().toString() + ".json"));
 	}
 	
 	public static boolean hasElevatedAccount(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		return accounts.containsKey(uuid) || Files.exists(Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + uuid.toString() + ".json"));
 	}
 	
 	public static boolean isAccountLoaded(Player p)
 	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		
 		return accounts.containsKey(p.getUniqueId());
 	}
 	
 	public static boolean isAccountLoaded(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		return accounts.containsKey(uuid);
 	}
 	
 	public static boolean hasElevatedAccountLoaded(Player p)
 	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		
 		return accounts.containsKey(p.getUniqueId());
 	}
 	
 	public static boolean hasElevatedAccountLoaded(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		return accounts.containsKey(uuid);
 	}
 	
 	public static void removeElevatedAccount(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		if(accounts.containsKey(uuid))
 		{
 			// Clear sooner rather than waiting for GC
@@ -260,6 +266,8 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 	
 	public static ElevatedAccount getAccount(Player p)
 	{
+		Objects.requireNonNull(p,"Player cannot be null!");
+		
 		if(!accounts.containsKey(p.getUniqueId())) { return null; }
 		return accounts.get(p.getUniqueId());
 	}
@@ -271,6 +279,8 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 	
 	public static ElevatedAccount getAccount(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
+		
 		if(!accounts.containsKey(uuid)) { return null; }
 		return accounts.get(uuid);
 	}
@@ -282,6 +292,7 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 
 	public static void save(UUID uuid)
 	{
+		Objects.requireNonNull(uuid,"UUID cannot be null!");
 		System.out.println(Paths.get(ELEVATED_ACCOUNTS_DIR + File.separator + uuid.toString() + ".json"));
 		
 		if(!accounts.containsKey(uuid)) { return; }
@@ -364,9 +375,9 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		ASKING_FOR_PIN_OR_PASSWORD_1,
 		ASKING_FOR_PIN_OR_PASSWORD_2
 	}
-
-	@Override
-	public Map<String, Object> getDefaults()
+	
+	@Configure
+	public static Map<String,Object> getDefaults()
 	{
 		return Map.of(
 				ConfigKey.STATIC_PIN,true,
@@ -386,9 +397,9 @@ public class ElevatedAccountCtrl implements Configurable, Listener
 		public static final String AUTH_TIME = "elevated_accounts.auth_time";
 	}
 	
-	public static class SecretViewWarning implements Listener
+	public static class SecretViewWarning implements InputListener
 	{
-		@EventHandler
+		@InputHandler(ChatUtils.HandlerNames.ELEVATED_ACCOUNTS_VIEW_SECRET)
 		public final static void onChatInput(ChatInputEvent e)
 		{
 			// Check input session id is matching that given by the request

@@ -73,7 +73,7 @@ public class MapUtils
 				Path filePath = Paths.get(mapImagesPath.toString() + File.separator + imageId.toString() + ".png");
 				ImageIO.write(img,"png",filePath.toFile());
 				
-				Logg.verb("Adding ImageMap " + view.getId());
+				Logg.verb("Adding ImageMap " + view.getId(),Logg.VerbGroup.MAP_UTILS);
 				imgs.put(view.getId(),new MapImage(imageId));
 			}
 			catch (Exception e)

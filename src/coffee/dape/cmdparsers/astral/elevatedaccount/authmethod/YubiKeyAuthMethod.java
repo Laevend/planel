@@ -15,6 +15,13 @@ public final class YubiKeyAuthMethod extends AuthenticationMethod
 	{
 		super(AuthMethod.YUBI_KEY);
 	}
+	
+	@Override
+	public boolean setup(Player player)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	@Override
 	public boolean verifyMethod(final String value,final Player player)

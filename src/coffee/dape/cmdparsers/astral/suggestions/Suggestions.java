@@ -424,4 +424,25 @@ public class Suggestions
 		
 		return suggestionLists.get(listNamespace);
 	}
+	
+	public static UnconditionalSuggestionList loggingVerboseGroups()
+	{
+		Namespace listNamespace = Namespace.of(Dape.getNamespaceName(),"logging_verbose_groups");
+		if(suggestionLists.containsKey(listNamespace)) { return suggestionLists.get(listNamespace); }
+		
+		suggestionLists.put(listNamespace,new UnconditionalSuggestionList(listNamespace,true,Comparators.ALPHABETICALLY)
+		{
+		    @Override
+		    public void build()
+		    {
+		    	for(Namespace group : Logg.getVerboseGroups())
+		    	{
+		    		Logg.error("Adding g " + group.toSimpleString());
+		    		add(group.toSimpleString());
+		    	}
+		    }
+		});
+		
+		return suggestionLists.get(listNamespace);
+	}
 }

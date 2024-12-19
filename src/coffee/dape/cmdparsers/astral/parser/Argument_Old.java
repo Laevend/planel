@@ -169,7 +169,7 @@ public class Argument_Old
     	{
     		//if(v.isBuildOnRequest()) { v.rebuildList(); }
     		this.allSuggestions.addAll(v.get());
-    		Logg.verb("Suggestion list name -> " + v.getSuggestionListNamespace());
+    		Logg.verb("Suggestion list name -> " + v.getSuggestionListNamespace(),Logg.VerbGroup.ASTRAL_PARSER);
     	});
 	}
 	

@@ -18,7 +18,7 @@ public class HexType extends ArgumentType
 	
 	public boolean isType(String argument)
 	{
-		return hexPattern.matcher(argument).find();
+		return hexPattern.matcher(argument).matches();
 	}
 	
 	@Override

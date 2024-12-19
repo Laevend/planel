@@ -12,6 +12,7 @@ import org.bukkit.craftbukkit.v1_21_R1.CraftServer;
 import coffee.dape.Dape;
 import coffee.dape.cmdparsers.astral.annos.CommandEx;
 import coffee.dape.config.Configurable;
+import coffee.dape.config.Configure;
 import coffee.dape.exception.InvalidCommandClassException;
 import coffee.dape.exception.MissingAnnotationException;
 import coffee.dape.utils.Logg;
@@ -107,7 +108,7 @@ public class CommandFactory implements Configurable
 	 */
 	public static void initCommandWithClass(Class<?> commandClass) throws NoSuchMethodException, SecurityException, MissingAnnotationException
 	{
-		Logg.verb("Registering command at path: " + commandClass.getName());
+		Logg.verb("Registering command at path: " + commandClass.getName(),Logg.VerbGroup.ASTRAL_PARSER);
 		
 		Constructor<?> cons = commandClass.getConstructor();
 		AstralExecutor executor = null;
@@ -199,14 +200,12 @@ public class CommandFactory implements Configurable
 	
 	public static final String CFG_DEFAULT_GROUP_PERMISSION_NEEDED = "astral.default_group_permission_needed";
 	public static final String CFG_FUZZY_SEARCH_SUGGESTION_RATIO = "astral.fuzzy_search_suggestion_ratio";
-
-	@Override
-	public Map<String,Object> getDefaults()
+	
+	@Configure
+	public static Map<String,Object> getDefaults()
 	{
-		return Map.of(CFG_DEFAULT_GROUP_PERMISSION_NEEDED,false,
-				  CFG_FUZZY_SEARCH_SUGGESTION_RATIO,70);
-		
-//		return Map.of(CFG_DEFAULT_GROUP_PERMISSION_NEEDED,false,
-//					  CFG_FUZZY_SEARCH_SUGGESTION_RATIO,70);
+		return Map.of(
+				CFG_DEFAULT_GROUP_PERMISSION_NEEDED,false,
+				CFG_FUZZY_SEARCH_SUGGESTION_RATIO,70);
 	}
 }

@@ -44,7 +44,8 @@ public class TomlSyntaxException extends Exception
 		String lineString = document.split("\n")[line];
 		if (line < document.split("\n").length - 1)
 		{
-			lineString += "⏎";
+			// Encoded return arrow as int
+			lineString += ((char) 9166);
 		}
 
 		System.out.println("TOML syntax error: " + this.getMessage() + " at line " + (line + 1) + ", position " + (this.position + 1));

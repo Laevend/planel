@@ -110,7 +110,7 @@ public class AstralExecutor implements CommandExecutor, TabCompleter
 		// Cache path logic methods
 		for(Method method : commandClass.getDeclaredMethods())
 		{
-			Logg.verb("Method name -> " + method.getName());
+			Logg.verb("Method name -> " + method.getName(),Logg.VerbGroup.ASTRAL_PARSER);
 		
 			// Lambda and switch cases used in command logic is registered as a method
 			if(method.getName().contains("$")) { continue; }
@@ -575,7 +575,7 @@ public class AstralExecutor implements CommandExecutor, TabCompleter
 			// Check if logic method has Player type
 			if(!pathMethod.getParameterTypes()[0].getName().equals(Player.class.getName())) { break SenderInstanceOf; }
 			
-			Logg.verb("Sender is Player");
+			Logg.verb("Sender is Player",Logg.VerbGroup.ASTRAL_PARSER);
 			senderType = playerSender;
 		}
 		
@@ -585,7 +585,7 @@ public class AstralExecutor implements CommandExecutor, TabCompleter
 			// Check if logic method has ConsoleCommandSender type
 			if(!pathMethod.getParameterTypes()[0].getName().equals(ConsoleCommandSender.class.getName())) { break SenderInstanceOf; }
 			
-			Logg.verb("Sender is Console");
+			Logg.verb("Sender is Console",Logg.VerbGroup.ASTRAL_PARSER);
 			senderType = consoleSender;
 		}
 		
@@ -600,7 +600,7 @@ public class AstralExecutor implements CommandExecutor, TabCompleter
 				return;
 			}
 			
-			Logg.verb("Sender is CommandSender");
+			Logg.verb("Sender is CommandSender",Logg.VerbGroup.ASTRAL_PARSER);
 			senderType = parseResult.getSender();
 		}
 		

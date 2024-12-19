@@ -33,6 +33,7 @@ public class ArgTypes implements Initialiser
 	public static final MaterialType MATERIAL = new MaterialType();
 	public static final UUIDType UUID = new UUIDType();
 	public static final UID4Type UID4 = new UID4Type();
+	public static final NamespaceType NAMESPACE = new NamespaceType();
 	public static final OnlinePlayerType ONLINE_PLAYER = new OnlinePlayerType();
 	public static final OfflinePlayerType OFFLINE_PLAYER = new OfflinePlayerType();
 	

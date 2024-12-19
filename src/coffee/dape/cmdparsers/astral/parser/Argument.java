@@ -46,7 +46,7 @@ public abstract class Argument
 		compileOnRequestSuggestionLists.forEach(suggestion ->
 		{
 			suggestions.addAll(suggestion.get());
-			Logg.verb("Compiling and adding suggestion list name -> " + suggestion.getSuggestionListNamespace().toString());
+			Logg.verb("Compiling and adding suggestion list name -> " + suggestion.getSuggestionListNamespace().toString(),Logg.VerbGroup.ASTRAL_PARSER);
 		});
 	}
 	

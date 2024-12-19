@@ -7,5 +7,5 @@ package coffee.dape.utils.interfaces;
  */
 public interface Initialiser
 {
-	public void init();
+	public static void init() {};
 }

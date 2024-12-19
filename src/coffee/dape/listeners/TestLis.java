@@ -21,7 +21,8 @@ public class TestLis implements Listener
 	{
 		DelayUtils.executeDelayedBukkitTask(() ->
 		{
-			PrintUtils.sendToast(e.getPlayer(),"Hello I am Toast",Material.COPPER_BULB,Frame.TASK);
+			PrintUtils.sendToast(e.getPlayer(),"Hi there do you have time to talk about our grate lord and saviour cheesus ghrist?",Material.TOTEM_OF_UNDYING,Frame.GOAL);
+			PrintUtils.sendToast(e.getPlayer(),"We're calling you today about your car's extended warranty",Material.MINECART,Frame.GOAL);
 		},60L);
 	}
 }

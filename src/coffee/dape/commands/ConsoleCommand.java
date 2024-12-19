@@ -60,6 +60,12 @@ public final class ConsoleCommand extends AstralExecutor
 			return;
 		}
 		
+		if(!ConsoleAccount.isSetup())
+		{
+			PrintUtils.error(con,"Cannot verify console pin as console account is not setup!");
+			return;
+		}
+		
 		try
 		{
 			ElevatedAccountCtrl.getConsoleAccount().auth(pin);

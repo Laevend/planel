@@ -3,6 +3,10 @@ package coffee.dape.utils;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -221,6 +225,22 @@ public class PlayerUtils
 		return result.getHitEntity();
 	}
 	
+	/**
+	 * Gets the block the player is looking at
+	 * @param p Player
+	 * @param maxDistance Max distance for the ray cast
+	 * @return Block player is looking at, null otherwise if block is too far away
+	 */
+	public static Block getBlockLookingAt(Player p,int maxDistance)
+	{
+		Location eyeLoc = p.getEyeLocation();
+		RayTraceResult result = p.getLocation().getWorld().rayTraceBlocks(eyeLoc,eyeLoc.getDirection(),maxDistance,FluidCollisionMode.NEVER);
+		
+		if(result == null) { return null; }
+		if(result.getHitBlockFace() == null) { return null; }
+		return result.getHitBlock();
+	}
+	
 	public static Vector getLookDirection(Player p)
 	{
 		return p.getLocation().getDirection();
@@ -234,5 +254,19 @@ public class PlayerUtils
 	public static Vector getDirectionOfEntityFromPlayer(Player p,LivingEntity e)
 	{
 		return p.getEyeLocation().subtract(e.getEyeLocation()).toVector();
+	}
+	
+	public static void resetSize(Player player)
+	{
+		if(player.getAttribute(Attribute.GENERIC_SCALE) != null) { player.getAttribute(Attribute.GENERIC_SCALE).setBaseValue(1); }
+		if(player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH) != null) { player.getAttribute(Attribute.GENERIC_JUMP_STRENGTH).setBaseValue(0.41D); }
+		if(player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE) != null) { player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(4.5D); }
+		if(player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE) != null) { player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(3D); }  
+		if(player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) { player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.1D); }
+		if(player.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) { player.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(0.4D); }
+		if(player.getAttribute(Attribute.GENERIC_STEP_HEIGHT) != null) { player.getAttribute(Attribute.GENERIC_STEP_HEIGHT).setBaseValue(0.6D); }
+		if(player.getAttribute(Attribute.GENERIC_SAFE_FALL_DISTANCE) != null) { player.getAttribute(Attribute.GENERIC_SAFE_FALL_DISTANCE).setBaseValue(3.0D); }
+		if(player.getAttribute(Attribute.GENERIC_GRAVITY) != null) { player.getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08D); }
+		if(player.getAttribute(Attribute.GENERIC_WATER_MOVEMENT_EFFICIENCY) != null) { player.getAttribute(Attribute.GENERIC_WATER_MOVEMENT_EFFICIENCY).setBaseValue(0D); }
 	}
 }

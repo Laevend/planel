@@ -4,9 +4,12 @@ import java.util.UUID;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import coffee.dape.Dape;
-import coffee.dape.utils.data.DataUtils.DType;
 
 public class DataContainerValue
 {
@@ -21,57 +24,57 @@ public class DataContainerValue
 	
 	public boolean asBoolean()
 	{
-		return (boolean) container.get(key,DType.BOOLEAN.type);
+		return (boolean) container.get(key,PersistentDataType.BOOLEAN);
 	}
 	
 	public byte asByte()
 	{
-		return (byte) container.get(key,DType.BYTE.type);
+		return (byte) container.get(key,PersistentDataType.BYTE);
 	}
 	
 	public byte[] asByteArray()
 	{
-		return (byte[]) container.get(key,DType.BYTE_ARRAY.type);
+		return (byte[]) container.get(key,PersistentDataType.BYTE_ARRAY);
 	}
 	
 	public double asDouble()
 	{
-		return (double) container.get(key,DType.DOUBLE.type);
+		return (double) container.get(key,PersistentDataType.DOUBLE);
 	}
 	
 	public float asFloat()
 	{
-		return (float) container.get(key,DType.FLOAT.type);
+		return (float) container.get(key,PersistentDataType.FLOAT);
 	}
 	
 	public int asInt()
 	{
-		return (int) container.get(key,DType.INTEGER.type);
+		return (int) container.get(key,PersistentDataType.INTEGER);
 	}
 	
 	public int[] asIntArray()
 	{
-		return (int[]) container.get(key,DType.INTEGER_ARRAY.type);
+		return (int[]) container.get(key,PersistentDataType.INTEGER_ARRAY);
 	}
 	
 	public long asLong()
 	{
-		return (long) container.get(key,DType.LONG.type);
+		return (long) container.get(key,PersistentDataType.LONG);
 	}
 	
 	public long[] asLongArray()
 	{
-		return (long[]) container.get(key,DType.LONG_ARRAY.type);
+		return (long[]) container.get(key,PersistentDataType.LONG_ARRAY);
 	}
 	
 	public short asShort()
 	{
-		return (short) container.get(key,DType.SHORT.type);
+		return (short) container.get(key,PersistentDataType.SHORT);
 	}
 	
 	public String asString()
 	{
-		return (String) container.get(key,DType.STRING.type);
+		return (String) container.get(key,PersistentDataType.STRING);
 	}
 	
 	public UUID asUUID()
@@ -79,8 +82,8 @@ public class DataContainerValue
 		return UUID.fromString(asString());
 	}
 	
-	public PersistentDataContainer asTagContainer()
+	public JsonObject asJson()
 	{
-		return (PersistentDataContainer) container.get(key,DType.TAG_CONTAINER.type);
+		return JsonParser.parseString(asString()).getAsJsonObject();
 	}
 }

@@ -1,7 +1,5 @@
 package coffee.dape.utils;
 
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -10,8 +8,8 @@ import org.bukkit.entity.Player;
 
 import coffee.dape.envvars.EnvVariables;
 import coffee.dape.envvars.EnvVariables.HardVariables;
-import coffee.dape.utils.toasts.Toasts;
 import coffee.dape.utils.toasts.Toast.Frame;
+import coffee.dape.utils.toasts.Toasts;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -30,7 +28,7 @@ public class PrintUtils
 	 * @param entity Entity to send message to
 	 * @param message Message to send
 	 */
-	public static void sendRawMsg(HumanEntity entity,String message)
+	public static void raw(HumanEntity entity,String message)
 	{
 		entity.sendMessage(message);
 	}
@@ -43,10 +41,10 @@ public class PrintUtils
 	 * @param sender CommandSender to send message to
 	 * @param message Message to send
 	 */
-	public static void sendRawMsg(CommandSender sender,String message)
+	public static void raw(CommandSender sender,String message)
 	{
 		if(!(sender instanceof Player p)) { Logg.raw(message); return; }
-		sendRawMsg(p,message);
+		raw(p,message);
 	}
 	
 	/**
@@ -56,7 +54,7 @@ public class PrintUtils
 	 * @param player Player to send message to
 	 * @param message Message to send
 	 */
-	public static void sendRawMsg(Player player,String message)
+	public static void raw(Player player,String message)
 	{
 		player.sendMessage(message);
 	}
@@ -67,17 +65,21 @@ public class PrintUtils
 	 * <p>Raw messages have no colour translating, formatting, or Dape message prefix</p>
 	 * @param message Message to send
 	 */
-	public static void sendRawMsgAll(String message)
+	public static void rawAll(String message)
 	{
-		Bukkit.getOnlinePlayers().forEach(player -> sendRawMsg(player,message));
+		Bukkit.getOnlinePlayers().forEach(player -> raw(player,message));
 	}
+	
+	// # ========== #
+	// # Info
+	// # ========== #
 	
 	/**
 	 * Send a message to a HumanEntity
 	 * @param entity Entity to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(HumanEntity entity,String message)
+	public static void info(HumanEntity entity,String message)
 	{
 		entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r " + message));
 	}
@@ -89,10 +91,10 @@ public class PrintUtils
 	 * @param sender CommandSender to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(CommandSender sender,String message)
+	public static void info(CommandSender sender,String message)
 	{
 		if(!(sender instanceof Player p)) { Logg.info(message); return; }
-		sendMsg(p,message);
+		info(p,message);
 	}
 	
 	/**
@@ -100,54 +102,45 @@ public class PrintUtils
 	 * @param player Player to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(Player player,String message)
+	public static void info(Player player,String message)
 	{
-		player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r " + message));
+		player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r ") + ColourUtils.applyColour(message,ColourUtils.TEXT));
 	}
 	
 	/**
 	 * Send a message to all players on the server
 	 * @param message Message to send
 	 */
-	public static void sendMsgAll(String message)
+	public static void infoAll(String message)
 	{
-		Bukkit.getOnlinePlayers().forEach(player -> sendMsg(player,message));
+		Bukkit.getOnlinePlayers().forEach(player -> info(player,message));
 	}
+	
+	// # ========== #
+	// # Warn
+	// # ========== #
 	
 	/**
 	 * Send a message to a HumanEntity
 	 * @param entity Entity to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(HumanEntity entity,String message,MsgAlert alertType)
+	public static void warn(HumanEntity entity,String message)
 	{
-		switch(alertType)
-		{
-			case INFO -> entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT));
-			case SUCCESS -> entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_SUCCESS));
-			case WARNING -> entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_WARNING));
-			case ERROR -> entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_ERROR));
-		}
+		entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r " + message));
 	}
 	
 	/**
 	 * Send a message to a CommandSender
 	 * 
-	 * <p>Messages being sent to ConsoleCommandSender will appear as an INFO, SUCCESS, WARNING, or ERROR log</p>
+	 * <p>Messages being sent to ConsoleCommandSender will appear as an WARN log</p>
 	 * @param sender CommandSender to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(CommandSender sender,String message,MsgAlert alertType)
+	public static void warn(CommandSender sender,String message)
 	{
-		if(sender instanceof Player p) { sendMsg(p,message,alertType); return; }
-		
-		switch(alertType)
-		{
-			case INFO -> Logg.info(message);
-			case SUCCESS -> Logg.success(message);
-			case WARNING -> Logg.warn(message);
-			case ERROR -> Logg.error(message);
-		}
+		if(!(sender instanceof Player p)) { Logg.warn(message); return; }
+		warn(p,message);
 	}
 	
 	/**
@@ -155,49 +148,138 @@ public class PrintUtils
 	 * @param player Player to send message to
 	 * @param message Message to send
 	 */
-	public static void sendMsg(Player player,String message,MsgAlert alertType)
+	public static void warn(Player player,String message)
 	{
-		switch(alertType)
-		{
-			case INFO -> player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT));
-			case SUCCESS -> player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_SUCCESS));
-			case WARNING -> player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_WARNING));
-			case ERROR -> player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r&7 ") + ColourUtils.applyColour(message,ColourUtils.TEXT_ERROR));
-		}
+		player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r ") + ColourUtils.applyColour(message,ColourUtils.TEXT_WARNING));
 	}
 	
 	/**
 	 * Send a message to all players on the server
 	 * @param message Message to send
 	 */
-	public static void sendMsgAll(String message,MsgAlert alertType)
+	public static void warnAll(String message)
 	{
-		Bukkit.getOnlinePlayers().forEach(player -> sendMsg(player,message,alertType));
+		Bukkit.getOnlinePlayers().forEach(player -> warn(player,message));
 	}
 	
+	// # ========== #
+	// # Error
+	// # ========== #
+	
+	/**
+	 * Send a message to a HumanEntity
+	 * @param entity Entity to send message to
+	 * @param message Message to send
+	 */
+	public static void error(HumanEntity entity,String message)
+	{
+		entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r " + message));
+	}
+	
+	/**
+	 * Send a message to a CommandSender
+	 * 
+	 * <p>Messages being sent to ConsoleCommandSender will appear as an ERROR log</p>
+	 * @param sender CommandSender to send message to
+	 * @param message Message to send
+	 */
+	public static void error(CommandSender sender,String message)
+	{
+		if(!(sender instanceof Player p)) { Logg.error(message); return; }
+		error(p,message);
+	}
+	
+	/**
+	 * Send a message to a player
+	 * @param player Player to send message to
+	 * @param message Message to send
+	 */
+	public static void error(Player player,String message)
+	{
+		player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r ") + ColourUtils.applyColour(message,ColourUtils.TEXT_ERROR));
+	}
+	
+	/**
+	 * Send a message to all players on the server
+	 * @param message Message to send
+	 */
+	public static void errorAll(String message)
+	{
+		Bukkit.getOnlinePlayers().forEach(player -> warn(player,message));
+	}
+	
+	// # ========== #
+	// # Success
+	// # ========== #
+	
+	/**
+	 * Send a message to a HumanEntity
+	 * @param entity Entity to send message to
+	 * @param message Message to send
+	 */
+	public static void success(HumanEntity entity,String message)
+	{
+		entity.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r " + message));
+	}
+	
+	/**
+	 * Send a message to a CommandSender
+	 * 
+	 * <p>Messages being sent to ConsoleCommandSender will appear as an SUCCESS log</p>
+	 * @param sender CommandSender to send message to
+	 * @param message Message to send
+	 */
+	public static void success(CommandSender sender,String message)
+	{
+		if(!(sender instanceof Player p)) { Logg.success(message); return; }
+		success(p,message);
+	}
+	
+	/**
+	 * Send a message to a player
+	 * @param player Player to send message to
+	 * @param message Message to send
+	 */
+	public static void success(Player player,String message)
+	{
+		player.sendMessage(ColourUtils.transCol(Logg.DAPE_PREFIX + "&r ") + ColourUtils.applyColour(message,ColourUtils.TEXT_SUCCESS));
+	}
+	
+	/**
+	 * Send a message to all players on the server
+	 * @param message Message to send
+	 */
+	public static void successAll(String message)
+	{
+		Bukkit.getOnlinePlayers().forEach(player -> success(player,message));
+	}
+	
+	// # ========== #
+	// # Action Bar
+	// # ========== #
 	
 	/**
 	 * Send an action bar message to a HumanEntity (assuming they're a player otherwise nothing will send)
 	 * @param entity Player to send message to
 	 * @param message Message to send
 	 */
-	public static void sendActBarMsg(HumanEntity entity,String message)
+	public static void actionBar(HumanEntity entity,String message)
 	{
 		if(!(entity instanceof Player p)) { return; }
-		sendActBarMsg(p,message);
+		actionBar(p,message);
 	}
 	
 	/**
 	 * Send an action bar message to a CommandSender
 	 * 
-	 * <p>Messages being sent to ConsoleCommandSender will NOT appear! Use {@linkplain #sendMsg(CommandSender, String, MsgAlert)} instead
+	 * <p>Messages being sent to ConsoleCommandSender will NOT appear! Use {@linkplain #sendMsg(CommandSender, String, MsgType)} instead
 	 * @param sender CommandSender to send message to
 	 * @param message Message to send
 	 */
-	public static void sendActBarMsg(CommandSender sender,String message)
+	public static void actionBar(CommandSender sender,String message)
 	{
 		if(!(sender instanceof Player p)) { return; }
-		sendActBarMsg(p,message);
+		actionBar(p,message);
 	}
 	
 	/**
@@ -205,7 +287,7 @@ public class PrintUtils
 	 * @param player Player to send message to
 	 * @param message Message to send
 	 */
-	public static void sendActBarMsg(Player player,String message)
+	public static void actionBar(Player player,String message)
 	{
 		player.spigot().sendMessage(ChatMessageType.ACTION_BAR,TextComponent.fromLegacy(ColourUtils.transCol(message)));
 	}
@@ -214,58 +296,9 @@ public class PrintUtils
 	 * Send an action bar message to all players on the server
 	 * @param message Message to send
 	 */
-	public static void sendActBarMsgAll(String message)
+	public static void actionBar(String message)
 	{
-		Bukkit.getOnlinePlayers().forEach(player -> sendActBarMsg(player,message));
-	}
-	
-	/**
-	 * Send an action bar message to a HumanEntity (assuming they're a player otherwise nothing will send)
-	 * @param entity Player to send message to
-	 * @param message Message to send
-	 */
-	public static void sendActBarMsg(HumanEntity entity,String message,MsgAlert alertType)
-	{
-		if(!(entity instanceof Player p)) { return; }
-		sendActBarMsg(p,message,alertType);
-	}
-	
-	/**
-	 * Send an action bar message to a CommandSender
-	 * 
-	 * <p>Messages being sent to ConsoleCommandSender will NOT appear! Use {@linkplain #sendMsg(CommandSender, String, MsgAlert)} instead
-	 * @param sender CommandSender to send message to
-	 * @param message Message to send
-	 */
-	public static void sendActBarMsg(CommandSender sender,String message,MsgAlert alertType)
-	{
-		if(!(sender instanceof Player p)) { return; }
-		sendActBarMsg(p,message,alertType);
-	}
-	
-	/**
-	 * Send an action bar message to a player
-	 * @param player Player to send message to
-	 * @param message Message to send
-	 */
-	public static void sendActBarMsg(Player player,String message,MsgAlert alertType)
-	{
-		switch(alertType)
-		{
-			case INFO -> player.spigot().sendMessage(ChatMessageType.ACTION_BAR,TextComponent.fromLegacy(ColourUtils.transCol(ColourUtils.applyColour(message,ColourUtils.TEXT))));
-			case SUCCESS -> player.spigot().sendMessage(ChatMessageType.ACTION_BAR,TextComponent.fromLegacy(ColourUtils.transCol(ColourUtils.applyColour(message,ColourUtils.TEXT_SUCCESS))));
-			case WARNING -> player.spigot().sendMessage(ChatMessageType.ACTION_BAR,TextComponent.fromLegacy(ColourUtils.transCol(ColourUtils.applyColour(message,ColourUtils.TEXT_WARNING))));
-			case ERROR -> player.spigot().sendMessage(ChatMessageType.ACTION_BAR,TextComponent.fromLegacy(ColourUtils.transCol(ColourUtils.applyColour(message,ColourUtils.TEXT_ERROR))));
-		}
-	}
-	
-	/**
-	 * Send an action bar message to all players on the server
-	 * @param message Message to send
-	 */
-	public static void sendActBarMsgAll(String message,MsgAlert alertType)
-	{
-		Bukkit.getOnlinePlayers().forEach(player -> sendActBarMsg(player,message,alertType));
+		Bukkit.getOnlinePlayers().forEach(player -> actionBar(player,message));
 	}
 	
 	/**
@@ -521,14 +554,7 @@ public class PrintUtils
 	 */
 	public static void sendToast(Player player,String text,Material icon,Frame frame)
 	{
-		String tempToastName = UUID.randomUUID().toString() + text.toLowerCase().replaceAll("\\s++","_");
-		Toasts.register(tempToastName,text,icon,frame);
-		Toasts.sendToast(tempToastName,player);
-		
-		DelayUtils.executeDelayedBukkitTask(() ->
-		{
-			Toasts.unregister(tempToastName);
-		},20L);
+		Toasts.queueToast(text,icon,frame,player);
 	}
 	
 	/**
@@ -539,14 +565,7 @@ public class PrintUtils
 	 */
 	public static void sendToastAll(String text,Material icon,Frame frame)
 	{
-		String tempToastName = UUID.randomUUID().toString() + text.toLowerCase().replaceAll("\\s++","_");
-		Toasts.register(tempToastName,text,icon,frame);		
-		Bukkit.getOnlinePlayers().forEach(player -> Toasts.sendToast(tempToastName,player));
-		
-		DelayUtils.executeDelayedBukkitTask(() ->
-		{
-			Toasts.unregister(tempToastName);
-		},20L);
+		Toasts.queueToast(text,icon,frame,Bukkit.getOnlinePlayers());
 	}
 	
 	/**
@@ -582,13 +601,26 @@ public class PrintUtils
 	 * Builds a title which will float to the left of chat
 	 * @param title The title
 	 */
+	public static void printChatTitleFloatLeft(CommandSender sender,String title)
+	{		
+		String titleCap = Character.toUpperCase(title.charAt(0)) + title.substring(1,title.length());
+		
+		raw(sender,"");
+		raw(sender,ColourUtils.transCol("&a" + titleCap + "&r"));
+		raw(sender,getDivider());
+	}
+	
+	/**
+	 * Builds a title which will float to the left of chat
+	 * @param title The title
+	 */
 	public static void printChatTitleFloatLeft(Player p,String title)
 	{		
 		String titleCap = Character.toUpperCase(title.charAt(0)) + title.substring(1,title.length());
 		
-		sendRawMsg(p,"");
-		sendRawMsg(p,ColourUtils.transCol("&a" + titleCap + "&r"));
-		sendRawMsg(p,getDivider());
+		raw(p,"");
+		raw(p,ColourUtils.transCol("&a" + titleCap + "&r"));
+		raw(p,getDivider());
 	}
 	
 	/**
@@ -633,7 +665,7 @@ public class PrintUtils
 		
 		for(char c : message.toCharArray())
 		{
-			if(c == '§')
+			if(c == ((char) 167))
 			{
 				previousCode = true;
 				continue;
@@ -688,7 +720,7 @@ public class PrintUtils
 		
 		for(char c : message.toCharArray())
 		{
-			if(c == '§')
+			if(c == ((char) 167))
 			{
 				previousCode = true;
 				continue;
@@ -865,12 +897,4 @@ public class PrintUtils
 			return DefaultFontInfo.DEFAULT;
 		}
 	}
-	
-	public enum MsgAlert
-	{
-		INFO,
-		SUCCESS,
-		WARNING,
-		ERROR
-	}	
 }

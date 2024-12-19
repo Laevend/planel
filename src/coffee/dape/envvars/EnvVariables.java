@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import coffee.dape.Dape;
 import coffee.dape.utils.Logg;
-import coffee.dape.utils.interfaces.Initialiser;
 import coffee.dape.utils.structs.Namespace;
 
 /**
@@ -13,12 +12,13 @@ import coffee.dape.utils.structs.Namespace;
  * @author Laeven
  * Environment variables 
  */
-public class EnvVariables implements Initialiser
+public class EnvVariables
 {
 	private static ConcurrentHashMap<Namespace,EnvVariable> serverEnvVars = new ConcurrentHashMap<>(HardVariables.values().length);
-
-	@Override
-	public void init()
+	
+	static { init(); }
+	
+	public static void init()
 	{
 		// Add hard variables to the map
 		for(HardVariables var : HardVariables.values())

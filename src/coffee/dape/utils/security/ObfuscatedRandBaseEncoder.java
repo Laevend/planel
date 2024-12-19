@@ -325,7 +325,7 @@ public final class ObfuscatedRandBaseEncoder
 	
 	/**
 	 * Math.pow() is flawed and sometimes does not give back the correct number because longs and ints are cast to doubles
-	 * When the base is a multiple of 2 or even then it's fine but it starts trying to round when base is odd number
+	 * When the base is a multiple of 2 or even, then it's fine but it starts trying to round when base is odd number
 	 * @param base
 	 * @param power
 	 * @return

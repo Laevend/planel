@@ -8,7 +8,6 @@ import java.text.DecimalFormat;
 
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
@@ -22,9 +21,11 @@ import coffee.dape.cmdparsers.astral.parser.CommandParser.CmdSender;
 import coffee.dape.cmdparsers.astral.types.ArgTypes;
 import coffee.dape.exception.MissingAnnotationException;
 import coffee.dape.utils.DelayUtils;
+import coffee.dape.utils.EntityUtils;
 import coffee.dape.utils.ImageUtils;
 import coffee.dape.utils.MapUtils;
 import coffee.dape.utils.MathUtils;
+import coffee.dape.utils.PlayerUtils;
 import coffee.dape.utils.PrintUtils;
 
 
@@ -58,7 +59,8 @@ public final class UtilsCommand extends AstralExecutor
 	{
 		// According to wiki, GENERIC_SCALE min-max values are as below
 		double clampedScale = MathUtils.clamp(0.0625d,16d,scale);
-		p.getAttribute(Attribute.GENERIC_SCALE).setBaseValue(scale);
+		//p.getAttribute(Attribute.GENERIC_SCALE).setBaseValue(scale);
+		EntityUtils.setSize(p,scale);
 		PrintUtils.info(p,"Scale changed to " + scaleFormat.format(clampedScale));
 	}
 	
@@ -66,7 +68,8 @@ public final class UtilsCommand extends AstralExecutor
 	public void resetScale(Player p)
 	{
 		// According to wiki, GENERIC_SCALE min-max values are as below
-		p.getAttribute(Attribute.GENERIC_SCALE).setBaseValue(1d);
+		//p.getAttribute(Attribute.GENERIC_SCALE).setBaseValue(1d);
+		PlayerUtils.resetSize(p);
 		PrintUtils.info(p,"Scale changed to " + scaleFormat.format(1d));
 	}
 	
